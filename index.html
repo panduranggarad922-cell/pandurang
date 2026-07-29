@@ -292,53 +292,65 @@
   </div>
 
   <!-- JAVASCRIPT LOGIC -->
+<!-- JAVASCRIPT LOGIC -->
   <script>
     const downloadBtn = document.getElementById('downloadBtn');
     const mediaLink = document.getElementById('mediaLink');
     const loader = document.getElementById('loader');
     const popup = document.getElementById('successPopup');
 
-    downloadBtn.addEventListener('click', function() {
+    downloadBtn.addEventListener('click', async function() {
       const link = mediaLink.value.trim();
 
-      // Check if link is empty
       if (link === "") {
         alert("Please paste a link first!");
         return;
       }
 
-      // Step 1: Start Loading Animation
+      // Step 1: Start Loading
       downloadBtn.disabled = true;
       loader.style.display = 'flex';
 
-      // Step 2: Simulate advanced fast fetching logic (2.5 seconds wait)
-      setTimeout(function() {
-        
-        // Hide loader
-        loader.style.display = 'none';
-        downloadBtn.disabled = false;
-        
-        // Clear input box
-        mediaLink.value = '';
+      try {
+        // Proxy URL add kiya gaya hai taaki Browser block na kare (Sirf Testing ke liye)
+        const realVideoUrl = "https://corsproxy.io/?https://www.w3schools.com/html/mov_bbb.mp4"; 
 
-        // Step 3: Auto Download directly to Gallery/Device logic
-        // Yahan par dummy .mp4 file generate ho rahi hai test karne ke liye.
-        // Original backend me ye direct video ka URL fetch karega.
+        // Step 2: Fetch Video Data
+        const videoResponse = await fetch(realVideoUrl);
+        
+        if (!videoResponse.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const videoBlob = await videoResponse.blob();
+        const videoObjectUrl = URL.createObjectURL(videoBlob);
+
+        // Step 3: Auto Save to Gallery
         const a = document.createElement('a');
-        a.href = "data:text/plain;charset=utf-8,Advanced%20Media%20Content"; // Demo File
-        a.download = "Media_" + Math.floor(Math.random() * 100000) + ".mp4"; 
+        a.href = videoObjectUrl;
+        a.download = "Reel_" + Math.floor(Math.random() * 100000) + ".mp4"; 
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
-
-        // Step 4: Show Popup Message for EXACTLY 2 Seconds
-        popup.classList.add('show');
         
+        // Clean Memory
+        document.body.removeChild(a);
+        URL.revokeObjectURL(videoObjectUrl);
+
+        // Step 4: Show Popup
+        popup.classList.add('show');
         setTimeout(function() {
           popup.classList.remove('show');
-        }, 2000); // 2 seconds
+        }, 2000);
 
-      }, 2500); // Loader 2.5 seconds tak ghumega fast feel dene ke liye
+      } catch (error) {
+        alert("Download failed! Please check your internet or API.");
+        console.error(error);
+      } finally {
+        // Step 5: Reset UI
+        loader.style.display = 'none';
+        downloadBtn.disabled = false;
+        mediaLink.value = '';
+      }
     });
   </script>
 
