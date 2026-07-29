@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reels & Status Downloader Pro</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+    /* === EXACT VARIABLES FROM PRIVACY FILE === */
+    :root {
+      --bg-deep: #05050f;
+      --card-glass: rgba(16, 18, 27, 0.6);
+      --accent-cyan: #00f0ff;
+      --accent-pink: #ff007c;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glow: rgba(0, 240, 255, 0.2);
+    }
+
+    html, body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-deep) !important;
+      color: var(--text-light);
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* === ANIMATED BACKGROUND ORBS === */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: -1;
+      animation: floatOrb 10s infinite alternate ease-in-out;
+    }
+    .orb-1 {
+      width: 400px; height: 400px;
+      background: rgba(0, 240, 255, 0.15);
+      top: -100px; left: -100px;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: rgba(255, 0, 124, 0.15);
+      bottom: -150px; right: -100px;
+      animation-delay: -5s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(50px) scale(1.1); }
+    }
+
+    /* === TOP NAVIGATION === */
+    .top-nav {
+      padding: 20px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(5, 5, 15, 0.8);
+      border-bottom: 1px solid var(--border-glow);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .brand-logo {
+      font-weight: 800;
+      font-size: 20px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .back-btn {
+      padding: 8px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      text-decoration: none;
+      border: 1px solid var(--border-glow);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: var(--accent-cyan);
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    /* === MAIN CONTAINER === */
+    .container {
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 0 20px;
+      animation: slideUpFade 1s ease forwards;
+    }
+
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === DOWNLOADER SECTION === */
+    .content-section {
+      background: var(--card-glass);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 40px;
+      backdrop-filter: blur(15px);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .content-section::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-pink));
+    }
+
+    .content-section h1 {
+      margin-top: 0;
+      font-size: 28px;
+      color: var(--text-light);
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .content-section p {
+      color: var(--text-muted);
+      margin-bottom: 30px;
+      font-size: 15px;
+    }
+
+    /* === INPUT & BUTTON BOX === */
+    .input-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .link-input {
+      flex: 1;
+      min-width: 250px;
+      background-color: #ffffff; /* White Search Box */
+      color: #000000;
+      border: 2px solid transparent;
+      padding: 16px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .link-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    }
+
+    .download-btn {
+      padding: 16px 30px;
+      background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(255, 0, 124, 0.4);
+    }
+
+    .download-btn:active {
+      transform: translateY(1px);
+    }
+
+    .download-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* === LOADER (CIRCLE SPINNER) === */
+    .loader-container {
+      display: none; /* Hidden by default */
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    .spinner {
+      width: 45px;
+      height: 45px;
+      border: 5px solid rgba(255, 255, 255, 0.1);
+      border-left-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* === POPUP TOAST === */
+    .popup-toast {
+      position: fixed;
+      bottom: -100px; /* Hidden initially */
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent-cyan);
+      color: #000;
+      font-weight: 800;
+      padding: 15px 30px;
+      border-radius: 50px;
+      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.5);
+      z-index: 1000;
+      transition: bottom 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55);
+    }
+
+    .popup-toast.show {
+      bottom: 40px; /* Slide up */
+    }
+
+    @media (max-width: 600px) {
+      .input-group {
+        flex-direction: column;
+      }
+      .link-input, .download-btn {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <!-- Top Navigation (Exactly like Privacy File) -->
+  <div class="top-nav">
+    <span class="brand-logo">DocuConvert Pro</span>
+    <a href="index.html" class="back-btn">← Back to Tools</a>
+  </div>
+
+  <div class="container">
+    
+    <!-- MAIN DOWNLOADER BOX -->
+    <div class="content-section">
+      <h1>Advanced Media Downloader</h1>
+      <p>Download 1-Minute Reels, Stories, and WhatsApp Status instantly in high quality.</p>
+      
+      <!-- Input and Button -->
+      <div class="input-group">
+        <input type="text" id="mediaLink" class="link-input" placeholder="Paste Reel, Story or Status link here..." autocomplete="off">
+        <button id="downloadBtn" class="download-btn">Download Now</button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div class="loader-container" id="loader">
+        <div class="spinner"></div>
+        <div style="color: var(--accent-cyan); font-weight: 600;">Extracting Media... Please wait!</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Success Popup -->
+  <div class="popup-toast" id="successPopup">
+    ✅ Save ho gaya!
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const downloadBtn = document.getElementById('downloadBtn');
+    const mediaLink = document.getElementById('mediaLink');
+    const loader = document.getElementById('loader');
+    const popup = document.getElementById('successPopup');
+
+    downloadBtn.addEventListener('click', function() {
+      const link = mediaLink.value.trim();
+
+      // Check if link is empty
+      if (link === "") {
+        alert("Please paste a link first!");
+        return;
+      }
+
+      // Step 1: Start Loading Animation
+      downloadBtn.disabled = true;
+      loader.style.display = 'flex';
+
+      // Step 2: Simulate advanced fast fetching logic (2.5 seconds wait)
+      setTimeout(function() {
+        
+        // Hide loader
+        loader.style.display = 'none';
+        downloadBtn.disabled = false;
+        
+        // Clear input box
+        mediaLink.value = '';
+
+        // Step 3: Auto Download directly to Gallery/Device logic
+        // Yahan par dummy .mp4 file generate ho rahi hai test karne ke liye.
+        // Original backend me ye direct video ka URL fetch karega.
+        const a = document.createElement('a');
+        a.href = "data:text/plain;charset=utf-8,Advanced%20Media%20Content"; // Demo File
+        a.download = "Media_" + Math.floor(Math.random() * 100000) + ".mp4"; 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Step 4: Show Popup Message for EXACTLY 2 Seconds
+        popup.classList.add('show');
+        
+        setTimeout(function() {
+          popup.classList.remove('show');
+        }, 2000); // 2 seconds
+
+      }, 2500); // Loader 2.5 seconds tak ghumega fast feel dene ke liye
+    });
+  </script>
+
+</body>
+</html>
