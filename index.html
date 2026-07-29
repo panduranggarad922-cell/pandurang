@@ -258,9 +258,9 @@
     }
 
     /* White Line Jo Dono Pointers Ke Bich Me Hogi */
-    .active-track-line {
+.active-track-line {
       position: absolute;
-      top: 21px; 
+      top: 21.5px; /* Ye line ko exact triangle ke center me layega */
       height: 3px;
       background-color: #ffffff;
       z-index: 1;
@@ -609,10 +609,15 @@
         minVal = parseFloat(sliderMin.value);
       }
 
-      const percentMin = (minVal / totalDuration) * 100;
-      const percentMax = (maxVal / totalDuration) * 100;
-      activeTrackLine.style.left = percentMin + "%";
-      activeTrackLine.style.width = (percentMax - percentMin) + "%";
+      // 🔴 NAYA CODE (Replace this part)
+      const pMin = minVal / totalDuration;
+      const pMax = maxVal / totalDuration;
+      
+      // Triangle ke tips ke bich line ko exact set karne ka perfect calculation
+      activeTrackLine.style.left = `calc(${pMin * 100}% - ${pMin * 22}px + 22px)`;
+      const pDiff = pMax - pMin;
+      activeTrackLine.style.width = `calc(${pDiff * 100}% - ${pDiff * 22}px - 22px)`;
+      // 🔴 NAYA CODE KHATAM
 
       startTimeDisplay.textContent = `Start: ${formatTime(minVal)}`;
       endTimeDisplay.textContent = `End: ${formatTime(maxVal)}`;
