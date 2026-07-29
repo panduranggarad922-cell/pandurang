@@ -250,11 +250,22 @@
       display: block;
     }
 
-    /* === DUAL RANGE SLIDER STYLING === */
+/* === DUAL RANGE SLIDER STYLING === */
     .dual-slider-wrapper {
       position: relative;
       height: 40px;
       margin-bottom: 15px;
+    }
+
+    /* White Line Jo Dono Pointers Ke Bich Me Hogi */
+    .active-track-line {
+      position: absolute;
+      top: 21px; 
+      height: 3px;
+      background-color: #ffffff;
+      z-index: 1;
+      pointer-events: none;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
     }
 
     .dual-slider-wrapper input[type="range"] {
@@ -266,24 +277,26 @@
       pointer-events: none;
       appearance: none;
       -webkit-appearance: none;
+      z-index: 2;
     }
 
+    /* Left Pointer (Cyan, Pointing Right ⫸) */
     .dual-slider-wrapper input[type="range"]::-webkit-slider-thumb {
       pointer-events: auto;
       appearance: none;
       -webkit-appearance: none;
       width: 22px;
-      height: 22px;
-      border-radius: 50%;
+      height: 26px;
       background: var(--accent-cyan);
       cursor: pointer;
-      box-shadow: 0 0 12px var(--accent-cyan);
-      border: 2px solid #fff;
+      clip-path: polygon(0% 0%, 100% 50%, 0% 100%); /* Triangle shape */
+      border-radius: 0;
     }
 
+    /* Right Pointer (Pink, Pointing Left ⫷) */
     .dual-slider-wrapper input[type="range"]#sliderMax::-webkit-slider-thumb {
       background: var(--accent-pink);
-      box-shadow: 0 0 12px var(--accent-pink);
+      clip-path: polygon(100% 0%, 0% 50%, 100% 100%); /* Reverse Triangle shape */
     }
 
     .time-info-row {
@@ -403,8 +416,9 @@
           <canvas id="waveformCanvas"></canvas>
         </div>
 
-        <!-- Single Dual-Handle Slider -->
+      <!-- Single Dual-Handle Slider -->
         <div class="dual-slider-wrapper">
+          <div class="active-track-line" id="activeTrackLine"></div>
           <input type="range" id="sliderMin" min="0" max="100" value="0" step="0.1">
           <input type="range" id="sliderMax" min="0" max="100" value="100" step="0.1">
         </div>
@@ -441,6 +455,7 @@
   </footer>
 
   <script>
+    const activeTrackLine = document.getElementById('activeTrackLine'); // Ye add karein
     const videoInput = document.getElementById('videoInput');
     const dropzone = document.getElementById('dropzone');
     const dropzoneContent = document.getElementById('dropzoneContent');
@@ -593,6 +608,11 @@
         sliderMin.value = maxVal - 0.2;
         minVal = parseFloat(sliderMin.value);
       }
+
+      const percentMin = (minVal / totalDuration) * 100;
+      const percentMax = (maxVal / totalDuration) * 100;
+      activeTrackLine.style.left = percentMin + "%";
+      activeTrackLine.style.width = (percentMax - percentMin) + "%";
 
       startTimeDisplay.textContent = `Start: ${formatTime(minVal)}`;
       endTimeDisplay.textContent = `End: ${formatTime(maxVal)}`;
