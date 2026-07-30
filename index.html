@@ -184,19 +184,8 @@
     }
     .movable-layer.selected .layer-handle { display: flex; }
     
-    .handle-delete { 
-      top: -13px; left: -13px; 
-      background: #ff4a4a; 
-      color: white; 
-      cursor: pointer; 
-    }
-    .handle-resize { 
-      bottom: -13px; right: -13px; 
-      background: #ffffff; 
-      color: #000; 
-      cursor: nwse-resize; 
-      font-size: 14px;
-    }
+    .handle-delete { top: -13px; left: -13px; background: #ff4a4a; color: white; cursor: pointer; }
+    .handle-resize { bottom: -13px; right: -13px; background: #ffffff; color: #000; cursor: nwse-resize; font-size: 14px; }
 
     /* === EDIT PANEL === */
     .edit-panel {
@@ -253,6 +242,17 @@
     .text-controls select, .text-controls input[type="color"] { background: transparent; color: white; border: 1px solid var(--border-glow); border-radius: 4px; padding: 4px; outline: none;}
     .text-controls input[type="color"] { width: 35px; height: 30px; padding: 0; cursor: pointer; }
 
+    /* NEW: Color Adjust Panel Elements */
+    .color-swatch-container { display: flex; gap: 15px; align-items: center; }
+    .color-swatch { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); transition: all 0.2s; flex-shrink: 0;}
+    .color-swatch.active { border: 2px solid white; box-shadow: 0 0 12px var(--accent-cyan); transform: scale(1.1); }
+
+    /* NEW: Advanced Effects Panel Elements */
+    .effect-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-width: 70px; }
+    .effect-icon { width: 55px; height: 55px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; justify-content: center; align-items: center; font-size: 22px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; color: var(--text-light); }
+    .effect-btn:hover .effect-icon { border-color: var(--accent-cyan); background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan); }
+    .effect-btn span { font-size: 11px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+
     /* === LOADING OVERLAY MODAL === */
     .loader-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -271,21 +271,17 @@
 </head>
 <body>
 
-  <!-- Animated Glass Orbs -->
   <div class="bg-orb orb-1"></div>
   <div class="bg-orb orb-2"></div>
 
-  <!-- Loading Overlay Modal -->
   <div id="loaderModal" class="loader-overlay">
     <div class="spinner"></div>
     <div id="loaderText" class="loader-text">Importing Photo...</div>
   </div>
 
-  <!-- Hidden File Inputs -->
   <input type="file" id="imageInput" accept="image/*" onchange="handleImageImport(event)" style="display:none;">
   <input type="file" id="pipInput" accept="image/*" onchange="spawnPipOverlay(event)" style="display:none;">
 
-  <!-- TOP NAVBAR -->
   <div class="top-nav">
     <span class="brand-logo">ProEditor Studio</span>
     <button id="topActionButton" class="action-top-btn" onclick="triggerTopAction()">
@@ -293,27 +289,22 @@
     </button>
   </div>
 
-  <!-- WORKSPACE -->
   <div class="workspace-wrapper" id="workspaceWrapper">
-    <!-- Initial Empty Upload Box -->
     <div id="emptyState" class="empty-state-box" onclick="document.getElementById('imageInput').click()">
       <i class="fa-solid fa-cloud-arrow-up"></i>
       <h3>Select a Photo</h3>
       <p>Tap here to import an image and unlock advanced editing tools.</p>
     </div>
 
-    <!-- Active Canvas & Movable Layers -->
     <div id="canvasBox" class="canvas-container" style="display:none;">
       <img id="mainCanvas" src="" alt="Editing Target">
 
-      <!-- Text Overlay Layer -->
       <div id="movableTextLayer" class="movable-layer">
         <div class="layer-handle handle-delete" onclick="removeLayer('text')"><i class="fa-solid fa-xmark"></i></div>
         <span id="textLayerDisplay">Custom Text</span>
         <div class="layer-handle handle-resize" onmousedown="initCombinedTransform(event, 'text')" ontouchstart="initCombinedTransform(event, 'text')"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
       </div>
 
-      <!-- PIP Overlay Layer -->
       <div id="movablePipLayer" class="movable-layer">
         <div class="layer-handle handle-delete" onclick="removeLayer('pip')"><i class="fa-solid fa-xmark"></i></div>
         <img id="pipImgDisplay" style="width:100px; height:100px; object-fit:contain; display:block; pointer-events:none;">
@@ -322,10 +313,8 @@
     </div>
   </div>
 
-  <!-- EDIT PANEL ENGINE -->
   <div class="edit-panel" id="editPanel" style="opacity: 0.5; pointer-events: none;">
 
-    <!-- Sub Panel 1: Adjustments -->
     <div id="adjustPanel" class="sub-panel">
       <div class="slider-box"><label>Brightness</label><input type="range" id="adj_brightness" min="-100" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
       <div class="slider-box"><label>Contrast</label><input type="range" id="adj_contrast" min="-100" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
@@ -342,12 +331,28 @@
       <button onclick="resetAdjustments()" style="background:var(--accent-pink); color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer;">Reset</button>
     </div>
 
-    <!-- Sub Panel 2: Filters -->
+    <!-- NEW: Advanced Color Selection Panel -->
+    <div id="colorPanel" class="sub-panel">
+      <div class="slider-box" style="min-width: 140px;">
+        <label>Intensity / Glow</label>
+        <input type="range" id="selectiveColorSlider" min="-100" max="100" value="0" onchange="applySelectiveColor()">
+      </div>
+      <div class="color-swatch-container" id="colorSwatchesContainer">
+        <!-- Dynamically populated via JS -->
+      </div>
+    </div>
+
     <div id="filterPanel" class="sub-panel">
       <!-- Generated via JS -->
     </div>
 
-    <!-- Sub Panel 3: Live Text Input Controls with Fonts & Color -->
+    <!-- NEW: 35 Snapchat Style Effects Panel -->
+    <div id="advancedEffectsPanel" class="sub-panel">
+      <div style="display:flex; gap:15px;" id="advancedEffectsGrid">
+        <!-- Dynamically populated via JS -->
+      </div>
+    </div>
+
     <div id="textPanel" class="sub-panel">
       <div class="text-controls">
         <input type="text" id="textInputVal" placeholder="Type here..." oninput="updateLiveText()">
@@ -370,7 +375,6 @@
       </button>
     </div>
 
-    <!-- Sub Panel 4: Crop Controls -->
     <div id="cropPanel" class="sub-panel">
       <button class="tool-btn" onclick="setCanvasRatio('free')"><i class="fa-solid fa-expand"></i>Free</button>
       <button class="tool-btn" onclick="setCanvasRatio(NaN)"><i class="fa-solid fa-image"></i>Original</button>
@@ -383,7 +387,6 @@
       <button onclick="cancelCrop()" style="background:rgba(255,255,255,0.1); color:white; border:none; padding:8px 18px; border-radius:8px; font-weight:bold; cursor:pointer;">Cancel</button>
     </div>
 
-    <!-- Sub Panel 5: Canvas Aspect Ratio -->
     <div id="canvasPanel" class="sub-panel">
       <button class="tool-btn" onclick="setCanvasRatio('free')"><i class="fa-solid fa-expand"></i>Free</button>
       <button class="tool-btn" onclick="setCanvasRatio(1)"><i class="fa-solid fa-square"></i>1:1 (Insta)</button>
@@ -392,16 +395,21 @@
       <button class="tool-btn" onclick="setCanvasRatio(9/16)"><i class="fa-solid fa-mobile-screen"></i>9:16 (Reels)</button>
     </div>
 
-    <!-- Main InShot Scrollable Tools Row -->
     <div class="tool-bar">
-      <!-- Undo / Redo Added at the VERY FIRST -->
       <button class="tool-btn" onclick="undoState()"><i class="fa-solid fa-arrow-rotate-left"></i>Undo</button>
       <button class="tool-btn" onclick="redoState()"><i class="fa-solid fa-arrow-rotate-right"></i>Redo</button>
       <div style="width:1px; height:30px; background:rgba(255,255,255,0.2); margin:0 5px;"></div>
       
-      <!-- Existing Tools Maintained -->
+      <!-- New Advanced Color Tool -->
+      <button class="tool-btn" onclick="openColorPanel()"><i class="fa-solid fa-palette"></i>Colors</button>
+      
+      <!-- Existing Tools -->
       <button class="tool-btn" onclick="toggleSubPanel('adjustPanel')"><i class="fa-solid fa-sliders"></i>Adjust</button>
-      <button class="tool-btn" onclick="toggleSubPanel('filterPanel')"><i class="fa-solid fa-wand-magic-sparkles"></i>Filter</button>
+      <button class="tool-btn" onclick="toggleSubPanel('filterPanel')"><i class="fa-solid fa-wand-magic"></i>Filter</button>
+      
+      <!-- New Effects Tool -->
+      <button class="tool-btn" onclick="toggleSubPanel('advancedEffectsPanel')"><i class="fa-solid fa-wand-magic-sparkles"></i>Effects</button>
+      
       <button class="tool-btn" onclick="startCropMode()"><i class="fa-solid fa-crop-simple"></i>Crop</button>
       <button class="tool-btn" onclick="activateTextTool()"><i class="fa-solid fa-font"></i>Text</button>
       <button class="tool-btn" onclick="document.getElementById('pipInput').click()"><i class="fa-solid fa-images"></i>PIP</button>
@@ -414,14 +422,11 @@
   </div>
 
   <script>
-    // === APPLICATION STATE & HISTORY ===
     let originalImageSrc = null;
     let currentImageSrc = null;
     let hasImage = false;
     let cropper = null;
-    let globalZIndex = 100; // Z-Index Manager
-
-    // ACTIVE TARGET MANAGER (main or pip)
+    let globalZIndex = 100;
     let activeTarget = 'main'; 
 
     let stateStyles = {
@@ -438,7 +443,6 @@
     let historyIndex = -1;
     let isRestoring = false;
 
-    // 18 Preset Filters Data Maintained
     const filterPresets = [
       { name: 'Original', filter: 'none' },
       { name: 'Cyberpunk', filter: 'hue-rotate(180deg) contrast(130%) saturate(160%)' },
@@ -460,17 +464,139 @@
       { name: 'Vaporwave', filter: 'hue-rotate(280deg) saturate(170%) contrast(110%)' }
     ];
 
+    // ==========================================
+    // NEW: HSL Helper Functions for Selective Color
+    // ==========================================
+    function rgbToHsl(r, g, b) {
+      r /= 255, g /= 255, b /= 255;
+      let max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max == min) { h = s = 0; } else {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        } h /= 6;
+      }
+      return [h * 360, s, l];
+    }
+    
+    function hslToRgb(h, s, l) {
+      h /= 360;
+      let r, g, b;
+      if (s == 0) { r = g = b = l; } else {
+        const hue2rgb = (p, q, t) => {
+          if(t < 0) t += 1; if(t > 1) t -= 1;
+          if(t < 1/6) return p + (q - p) * 6 * t;
+          if(t < 1/2) return q;
+          if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          return p;
+        }
+        let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        let p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    // ==========================================
+    // NEW: Color Targets and Effects Database
+    // ==========================================
+    const colorTargets = [
+      { name: "Face / Skin", hue: 25, css: "#ffc8b4" },
+      { name: "Red", hue: 0, css: "#ff0000" },
+      { name: "Yellow", hue: 60, css: "#ffff00" },
+      { name: "Green", hue: 120, css: "#00ff00" },
+      { name: "Cyan", hue: 180, css: "#00ffff" },
+      { name: "Blue", hue: 240, css: "#0000ff" },
+      { name: "Magenta", hue: 300, css: "#ff00ff" }
+    ];
+    let selectedColorTarget = 25; 
+    let tempColorBaseSrc = null;
+
+    const snapEffects = [
+      // --- NEW SNAPCHAT STYLE EFFECTS (STARTING ME) ---
+      
+      { name: "HDR Pro", icon: "fa-image", type: "canvas", fn: (d) => { 
+          for(let i=0; i<d.length; i+=4) { 
+              d[i]=Math.min(255,d[i]*1.15); 
+              d[i+1]=Math.min(255,d[i+1]*1.1); 
+              d[i+2]=Math.min(255,d[i+2]*1.05); 
+          } 
+      }},
+      
+      { name: "Portrait Blur", icon: "fa-user-large-slash", type: "canvas", fn: (d, w, h, ctx) => {
+          let tCan = document.createElement('canvas'); tCan.width=w; tCan.height=h;
+          let tCtx = tCan.getContext('2d'); tCtx.putImageData(new ImageData(d,w,h),0,0);
+          ctx.filter = 'blur(8px)'; ctx.drawImage(tCan,0,0); ctx.filter = 'none';
+          let g = ctx.createRadialGradient(w/2,h/2,w/5,w/2,h/2,w/1.2);
+          g.addColorStop(0,"rgba(255,255,255,1)"); g.addColorStop(1,"rgba(255,255,255,0)");
+          let mCan = document.createElement('canvas'); mCan.width=w; mCan.height=h;
+          let mCtx = mCan.getContext('2d'); mCtx.fillStyle=g; mCtx.fillRect(0,0,w,h);
+          mCtx.globalCompositeOperation='source-in'; mCtx.drawImage(tCan,0,0);
+          ctx.drawImage(mCan,0,0); return false;
+      }},
+
+      { name: "Snap Day", icon: "fa-calendar-day", action: () => addOverlayText(new Date().toLocaleDateString('en-US', {weekday: 'long'}), "#ffffff", "Dancing Script") },
+      
+      { name: "Neon Time", icon: "fa-clock", action: () => addOverlayText(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), "#fff200", "Teko") },
+      
+      { name: "Austin Filter", icon: "fa-location-dot", action: () => addOverlayText("Austin\n" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), "#ffffff", "Caveat") },
+      
+      { name: "Snap Date", icon: "fa-calendar", action: () => addOverlayText(new Date().toLocaleDateString(), "#ffffff", "Pacifico") },
+      
+      { name: "Doodle Heart", icon: "fa-heart", action: () => addOverlayText("🤍", "#ffffff", "Inter") },
+
+      { name: "Golden Hour", icon: "fa-cloud-sun", type: "canvas", fn: (d, w, h, ctx) => { 
+          for(let i=0; i<d.length; i+=4) { d[i]=Math.min(255,d[i]*1.2); d[i+1]=Math.min(255,d[i+1]*1.1); } 
+          ctx.putImageData(new ImageData(d,w,h),0,0); 
+          let g=ctx.createRadialGradient(w/2,h/2,w/4,w/2,h/2,w); 
+          g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(50,20,0,0.6)"); 
+          ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return false; 
+      }},
+
+      { name: "Cinematic Bars", icon: "fa-film", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="#000"; ctx.fillRect(0,0,w,h*0.12); ctx.fillRect(0,h-h*0.12,w,h*0.12); return false; } },
+      
+      { name: "Polaroid Frame", icon: "fa-image-portrait", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="#fff"; let b=w*0.05; ctx.fillRect(0,0,w,b); ctx.fillRect(0,0,b,h); ctx.fillRect(w-b,0,b,h); ctx.fillRect(0,h-b*3,w,b*3); return false; } },
+      
+      { name: "Cam REC", icon: "fa-video", action: () => addOverlayText("🔴 REC", "#ff0000", "Inter") },
+
+      // --- PURANE BEHTAREEN EFFECTS (Taaki kuch delete na ho) ---
+      { name: "Glitch Shift", icon: "fa-bolt", type: "canvas", fn: (d, w, h) => { let c = new Uint8ClampedArray(d); for(let i=0; i<d.length; i+=4) if(i+60 < d.length) { d[i]=c[i+60]; d[i+2]=c[Math.max(0,i-60+2)]; } } },
+      { name: "Film Grain", icon: "fa-braille", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let n = (Math.random()-0.5)*40; d[i]=Math.min(255,Math.max(0,d[i]+n)); d[i+1]=Math.min(255,Math.max(0,d[i+1]+n)); d[i+2]=Math.min(255,Math.max(0,d[i+2]+n)); } } },
+      { name: "Dark Vignette", icon: "fa-circle-dot", type: "canvas", fn: (d, w, h, ctx) => { let g = ctx.createRadialGradient(w/2,h/2,w/4,w/2,h/2,w/1.2); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,0.85)"); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return false; } },
+      { name: "Light Vignette", icon: "fa-circle", type: "canvas", fn: (d, w, h, ctx) => { let g = ctx.createRadialGradient(w/2,h/2,w/4,w/2,h/2,w/1.2); g.addColorStop(0,"rgba(255,255,255,0)"); g.addColorStop(1,"rgba(255,255,255,0.7)"); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return false; } },
+      { name: "Pixelate", icon: "fa-table-cells", type: "canvas", fn: (d, w, h, ctx) => { let s=12; let c=document.createElement('canvas'); c.width=w/s; c.height=h/s; c.getContext('2d').drawImage(ctx.canvas,0,0,w/s,h/s); ctx.imageSmoothingEnabled=false; ctx.drawImage(c,0,0,w,h); return false; } },
+      { name: "CRT Scanlines", icon: "fa-tv", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="rgba(0,0,0,0.3)"; for(let y=0; y<h; y+=4) ctx.fillRect(0,y,w,1); return false; } },
+      { name: "Duotone Cyan", icon: "fa-palette", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let l=(d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11)/255; d[i]=0; d[i+1]=l*255; d[i+2]=l*255; } } },
+      { name: "Duotone Red", icon: "fa-palette", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let l=(d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11)/255; d[i]=255*l; d[i+1]=0; d[i+2]=50*l; } } },
+      { name: "Posterize", icon: "fa-layer-group", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { d[i]=Math.round(d[i]/64)*64; d[i+1]=Math.round(d[i+1]/64)*64; d[i+2]=Math.round(d[i+2]/64)*64; } } },
+      { name: "Neon Glow", icon: "fa-lightbulb", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { d[i]=Math.min(255,d[i]*1.5); d[i+2]=Math.min(255,d[i+2]*1.5); } } },
+      { name: "Sepia Scratch", icon: "fa-grip-lines-vertical", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="rgba(100,70,30,0.2)"; ctx.fillRect(0,0,w,h); ctx.fillStyle="rgba(255,255,255,0.6)"; for(let i=0;i<40;i++) ctx.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*2,Math.random()*h*0.3); return false; } },
+      { name: "VHS Tape", icon: "fa-compact-disc", type: "canvas", fn: (d, w, h, ctx) => { let c = new Uint8ClampedArray(d); for(let i=0; i<d.length; i+=4) if(i+32 < d.length) { d[i]=c[i+32]; } ctx.putImageData(new ImageData(d,w,h),0,0); ctx.fillStyle="rgba(0,0,0,0.2)"; for(let y=0; y<h; y+=3) ctx.fillRect(0,y,w,1); return false; } },
+      { name: "Night Vision", icon: "fa-eye", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let l=(d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11); d[i]=0; d[i+1]=l*1.5; d[i+2]=0; } } },
+      { name: "Thermal Cam", icon: "fa-temperature-high", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let l=(d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11); d[i]=l>128?255:l*2; d[i+1]=l>128?(l-128)*2:0; d[i+2]=l<128?255-l*2:0; } } }
+    ];
+
     document.addEventListener("DOMContentLoaded", () => {
       renderFilterCards();
+      initColorPanel();
+      initAdvancedEffects();
     });
 
-    // Z-INDEX Function to bring selected layer above
+    // ==========================================
+    // Core Engine Logic Continued
+    // ==========================================
+
     function bringToFront(layerId) {
       globalZIndex++;
       document.getElementById(layerId).style.zIndex = globalZIndex;
     }
 
-    // TARGET EDITOR LOGIC (Switch between PIP and Main Image)
     function setEditTarget(target) {
       activeTarget = target;
       let st = stateStyles[target];
@@ -489,7 +615,6 @@
       renderFilterCards();
     }
 
-    // === SAVE, UNDO & REDO CORE ENGINE ===
     function saveHistory() {
       if(isRestoring || !hasImage) return;
       const state = {
@@ -523,9 +648,8 @@
       document.getElementById("mainCanvas").src = currentImageSrc;
       
       stateStyles = JSON.parse(JSON.stringify(s.stateStyles));
-      setEditTarget(activeTarget); // Updates UI for current selection
+      setEditTarget(activeTarget); 
 
-      // Force apply filters from restored state for both Main and PIP
       ["main", "pip"].forEach(t => {
         let st = stateStyles[t];
         let filter = (st.activeFilterCss !== 'none' ? st.activeFilterCss + " " : "") + `brightness(${100 + Number(st.b) + Number(st.exp)}%) contrast(${100 + Number(st.c)}%) saturate(${100 + Number(st.s) + Number(st.vib)}%) blur(${st.blur}px) hue-rotate(${Number(st.h) + Number(st.w)}deg) sepia(${st.sep}%) invert(${st.inv}%) grayscale(${st.gray}%) opacity(${st.op}%) `;
@@ -556,23 +680,30 @@
       isRestoring = false;
     }
 
-    // === OUTSIDE CLICK TO CLOSE PANELS & SAVE ===
     document.getElementById("workspaceWrapper").addEventListener('click', function(e) {
       if (e.target.id === 'workspaceWrapper' || e.target.id === 'mainCanvas' || e.target.id === 'canvasBox') {
         document.querySelectorAll(".sub-panel").forEach(p => p.classList.remove("active"));
         document.getElementById("movableTextLayer").classList.remove("selected");
         document.getElementById("movablePipLayer").classList.remove("selected");
-        setEditTarget('main'); // Reset edit target to main image when nothing is selected
+        setEditTarget('main'); 
+        tempColorBaseSrc = null; 
       }
     });
 
-    // Populate Filter Cards Grid
+    function toggleSubPanel(panelId) {
+      killCropper();
+      if(panelId !== 'colorPanel') tempColorBaseSrc = null; 
+      const panel = document.getElementById(panelId);
+      const isOpen = panel.classList.contains("active");
+      document.querySelectorAll(".sub-panel").forEach(p => p.classList.remove("active"));
+      if (!isOpen) panel.classList.add("active");
+    }
+
     function renderFilterCards() {
       const panel = document.getElementById("filterPanel");
       panel.innerHTML = "";
       
       let currentFilterCss = stateStyles[activeTarget].activeFilterCss;
-      // Show correct preview image on filters depending on what is selected
       let previewSrc = activeTarget === 'pip' ? document.getElementById("pipImgDisplay").src : (currentImageSrc || 'https://via.placeholder.com/100');
 
       filterPresets.forEach((p, idx) => {
@@ -587,7 +718,6 @@
       });
     }
 
-    // === LOADER & ACTIONS ===
     function showLoader(msg) {
       document.getElementById("loaderText").innerText = msg;
       document.getElementById("loaderModal").classList.add("show");
@@ -621,12 +751,9 @@
       }, 600);
     }
 
-    // === EDITING ENGINE & ADJUSTMENTS ===
     function applyEffects(isTargetSwitch = false) {
       if (!hasImage) return;
-      
       let st = stateStyles[activeTarget];
-
       if (!isTargetSwitch) {
         st.b = document.getElementById("adj_brightness").value;
         st.c = document.getElementById("adj_contrast").value;
@@ -641,10 +768,8 @@
         st.exp = document.getElementById("adj_exposure").value;
         st.vib = document.getElementById("adj_vibrance").value;
       }
-
       let customChain = `brightness(${100 + Number(st.b) + Number(st.exp)}%) contrast(${100 + Number(st.c)}%) saturate(${100 + Number(st.s) + Number(st.vib)}%) blur(${st.blur}px) hue-rotate(${Number(st.h) + Number(st.w)}deg) sepia(${st.sep}%) invert(${st.inv}%) grayscale(${st.gray}%) opacity(${st.op}%) `;
       const fullFilterStr = (st.activeFilterCss !== 'none' ? st.activeFilterCss + " " : "") + customChain;
-      
       let targetEl = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
       targetEl.style.filter = fullFilterStr;
     }
@@ -665,29 +790,14 @@
       saveHistory();
     }
 
-    function toggleSubPanel(panelId) {
-      killCropper();
-      const panel = document.getElementById(panelId);
-      const isOpen = panel.classList.contains("active");
-      document.querySelectorAll(".sub-panel").forEach(p => p.classList.remove("active"));
-      if (!isOpen) panel.classList.add("active");
-    }
-
-    // === CROPPER JS INTEGRATION ===
     function startCropMode() {
       if (!hasImage) return;
       toggleSubPanel("cropPanel");
-      
       const img = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
       if (cropper) cropper.destroy();
-      
       cropper = new Cropper(img, {
-        viewMode: 1,
-        autoCropArea: 1, 
-        dragMode: 'none', // Fixes issue: user can now only drag from edges, cannot create new box on canvas
-        background: false,
+        viewMode: 1, autoCropArea: 1, dragMode: 'none', background: false,
         ready: function() {
-          // Fixes issue: Filters gayab hone ka problem, cropper pe same filter apply kar dia
           const filterStr = img.style.filter;
           const cropCanvasImg = document.querySelector('.cropper-canvas img');
           const cropViewImg = document.querySelector('.cropper-view-box img');
@@ -703,20 +813,9 @@
       setTimeout(() => {
         const croppedUrl = cropper.getCroppedCanvas().toDataURL("image/jpeg", 0.95);
         const targetImg = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
-        
-        // Save current active filters so they don't reset
         const currentFilter = targetImg.style.filter;
-
-        if (activeTarget === 'pip') {
-            targetImg.src = croppedUrl;
-        } else {
-            currentImageSrc = croppedUrl;
-            targetImg.src = currentImageSrc;
-        }
-        
-        // Reapply filter
+        if (activeTarget === 'pip') { targetImg.src = croppedUrl; } else { currentImageSrc = croppedUrl; targetImg.src = currentImageSrc; }
         targetImg.style.filter = currentFilter;
-        
         killCropper();
         renderFilterCards();
         saveHistory(); 
@@ -738,7 +837,6 @@
       else cropper.setAspectRatio(ratio);
     }
 
-    // === ROTATE & FLIP (Dynamically Targets Main or PIP) ===
     function rotateImage(deg) {
       if (!hasImage) return;
       const targetImg = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
@@ -751,13 +849,7 @@
         ctx.rotate((deg * Math.PI) / 180);
         ctx.drawImage(image, -image.width / 2, -image.height / 2);
         const newSrc = canvas.toDataURL("image/jpeg", 0.95);
-        if (activeTarget === 'pip') {
-            targetImg.src = newSrc;
-        } else {
-            currentImageSrc = newSrc;
-            targetImg.src = currentImageSrc; 
-            renderFilterCards();
-        }
+        if (activeTarget === 'pip') { targetImg.src = newSrc; } else { currentImageSrc = newSrc; targetImg.src = currentImageSrc; renderFilterCards(); }
         saveHistory();
       };
       image.src = targetImg.src;
@@ -775,18 +867,162 @@
         ctx.scale(dir === 'h' ? -1 : 1, dir === 'v' ? -1 : 1);
         ctx.drawImage(image, 0, 0);
         const newSrc = canvas.toDataURL("image/jpeg", 0.95);
-        if (activeTarget === 'pip') {
-            targetImg.src = newSrc;
-        } else {
-            currentImageSrc = newSrc;
-            targetImg.src = currentImageSrc; 
-        }
+        if (activeTarget === 'pip') { targetImg.src = newSrc; } else { currentImageSrc = newSrc; targetImg.src = currentImageSrc; }
         saveHistory();
       };
       image.src = targetImg.src;
     }
 
-    // === MOVABLE LAYERS (TEXT & PIP) ===
+    // ==========================================
+    // NEW FUNCTION: Advanced Color Setup & Logic
+    // ==========================================
+    function initColorPanel() {
+      const cont = document.getElementById('colorSwatchesContainer');
+      cont.innerHTML = "";
+      colorTargets.forEach(c => {
+        const div = document.createElement('div');
+        div.className = "color-swatch" + (c.hue === selectedColorTarget ? " active" : "");
+        div.style.backgroundColor = c.css;
+        div.title = c.name;
+        div.onclick = () => {
+          document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
+          div.classList.add('active');
+          selectedColorTarget = c.hue;
+          document.getElementById('selectiveColorSlider').value = 0;
+          tempColorBaseSrc = currentImageSrc; 
+        };
+        cont.appendChild(div);
+      });
+    }
+
+    function openColorPanel() {
+      if (!hasImage) return;
+      tempColorBaseSrc = currentImageSrc;
+      document.getElementById('selectiveColorSlider').value = 0;
+      toggleSubPanel('colorPanel');
+    }
+
+    function applySelectiveColor() {
+      if(!hasImage) return;
+      if(!tempColorBaseSrc) tempColorBaseSrc = currentImageSrc;
+      const val = parseInt(document.getElementById('selectiveColorSlider').value);
+
+      showLoader("Adjusting Color Glow...");
+      setTimeout(() => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.width; canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          
+          if (val !== 0) {
+              const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const data = imgData.data;
+              let range = selectedColorTarget === 25 ? 40 : 30; // Face skin gets wider tolerance
+              
+              for(let i=0; i<data.length; i+=4) {
+                let r = data[i], g = data[i+1], b = data[i+2];
+                let hsl = rgbToHsl(r, g, b);
+                let h = hsl[0], s = hsl[1], l = hsl[2];
+                let dist = Math.min(Math.abs(h - selectedColorTarget), 360 - Math.abs(h - selectedColorTarget));
+                
+                if(dist < range && s > 0.1) { // Apply to colored areas matching range
+                  let effect = (range - dist) / range;
+                  l = Math.max(0, Math.min(1, l + (val / 180) * effect)); 
+                  s = Math.max(0, Math.min(1, s + (val / 250) * effect)); 
+                  let rgb = hslToRgb(h, s, l);
+                  data[i] = rgb[0]; data[i+1] = rgb[1]; data[i+2] = rgb[2];
+                }
+              }
+              ctx.putImageData(imgData, 0, 0);
+          }
+          const newSrc = canvas.toDataURL("image/jpeg", 0.95);
+          currentImageSrc = newSrc;
+          const targetImg = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
+          targetImg.src = currentImageSrc;
+          
+          saveHistory();
+          hideLoader();
+        };
+        img.src = tempColorBaseSrc; 
+      }, 50);
+    }
+
+    // ==========================================
+    // NEW FUNCTION: Advanced Snap Effects Setup & Logic
+    // ==========================================
+    function initAdvancedEffects() {
+      const grid = document.getElementById("advancedEffectsGrid");
+      grid.innerHTML = "";
+      snapEffects.forEach((ef, idx) => {
+        const div = document.createElement("div");
+        div.className = "effect-btn";
+        div.onclick = () => triggerAdvancedEffect(idx);
+        div.innerHTML = `
+          <div class="effect-icon"><i class="fa-solid ${ef.icon}"></i></div>
+          <span>${ef.name}</span>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function addOverlayText(text, color, font) {
+       activateTextTool();
+       document.getElementById("textInputVal").value = text;
+       document.getElementById("textColorVal").value = color;
+       document.getElementById("textFontVal").value = "Inter"; 
+       updateLiveText();
+       document.getElementById("textLayerDisplay").style.fontFamily = font;
+       document.getElementById("textLayerDisplay").innerText = text;
+    }
+
+    function triggerAdvancedEffect(idx) {
+      if(!hasImage) return;
+      const ef = snapEffects[idx];
+      
+      // Agar text wala effect hai, toh wo directly replace hota hai
+      if(!ef.type) {
+         ef.action(); 
+      } else {
+         
+         // MAIN FIX: Agar pehle se koi effect laga hua hai (last action me), toh usko undo (remove) karo
+         if (window.lastEffectHistoryIndex === historyIndex) {
+             undoState(); 
+         }
+
+         showLoader("Applying Advanced Effect...");
+         setTimeout(() => {
+             const canvas = document.createElement('canvas');
+             const ctx = canvas.getContext('2d');
+             const img = new Image();
+             img.onload = () => {
+                 canvas.width = img.width; canvas.height = img.height;
+                 ctx.drawImage(img, 0, 0);
+
+                 if(ef.type === 'canvas') {
+                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    let res = ef.fn(imgData.data, canvas.width, canvas.height, ctx);
+                    if(res !== false) ctx.putImageData(imgData, 0, 0);
+                 }
+
+                 const newSrc = canvas.toDataURL("image/jpeg", 0.95);
+                 currentImageSrc = newSrc;
+                 const targetEl = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
+                 targetEl.src = currentImageSrc;
+                 
+                 saveHistory(); // Naya state history me save karo
+                 
+                 // MAIN FIX: Naye effect ki history index ko yaad rakho taaki agle effect par track ho sake
+                 window.lastEffectHistoryIndex = historyIndex;
+                 
+                 hideLoader();
+             };
+             img.src = currentImageSrc;
+         }, 100);
+      }
+    }
+
     function activateTextTool() {
       if (!hasImage) return;
       toggleSubPanel('textPanel');
@@ -795,11 +1031,9 @@
         el.classList.add("active", "selected");
         document.getElementById("textInputVal").value = "Custom Text";
         updateLiveText();
-      } else {
-        el.classList.add("selected");
-      }
-      bringToFront("movableTextLayer"); // Z-Index up
-      setEditTarget("main"); // Text cannot have image filters
+      } else { el.classList.add("selected"); }
+      bringToFront("movableTextLayer"); 
+      setEditTarget("main"); 
       document.getElementById("textInputVal").focus();
       attachLayerDrag('text');
     }
@@ -809,10 +1043,7 @@
       const color = document.getElementById("textColorVal").value;
       const font = document.getElementById("textFontVal").value;
       const display = document.getElementById("textLayerDisplay");
-      
-      display.innerText = val || " ";
-      display.style.color = color;
-      display.style.fontFamily = font;
+      display.innerText = val || " "; display.style.color = color; display.style.fontFamily = font;
     }
 
     function placeTextRightArrow() {
@@ -823,7 +1054,7 @@
 
     document.getElementById("movableTextLayer").addEventListener('click', (e) => {
       if(e.target.classList.contains('layer-handle')) return;
-      bringToFront("movableTextLayer"); // Fixes text vs pip overlap problem
+      bringToFront("movableTextLayer"); 
       document.getElementById("movableTextLayer").classList.add("selected");
       document.getElementById("movablePipLayer").classList.remove("selected");
       toggleSubPanel('textPanel');
@@ -838,14 +1069,10 @@
       document.getElementById("pipImgDisplay").src = url;
       const el = document.getElementById("movablePipLayer");
       el.classList.add("active", "selected");
-      
-      // Reset PIP properties for new import
       stateStyles.pip = { b: 0, c: 0, s: 0, blur: 0, h: 0, sep: 0, inv: 0, gray: 0, op: 100, w: 0, exp: 0, vib: 0, activeFilterCss: 'none' };
       document.getElementById("pipImgDisplay").style.filter = 'none';
-      
       bringToFront("movablePipLayer");
-      setEditTarget("pip"); // Set focus immediately so edits apply to PIP
-
+      setEditTarget("pip"); 
       applyLayerTransform('pip');
       attachLayerDrag('pip');
       saveHistory();
@@ -853,10 +1080,10 @@
 
     document.getElementById("movablePipLayer").addEventListener('click', (e) => {
       if(e.target.classList.contains('layer-handle')) return;
-      bringToFront("movablePipLayer"); // Fixes text vs pip overlap problem
+      bringToFront("movablePipLayer"); 
       document.getElementById("movablePipLayer").classList.add("selected");
       document.getElementById("movableTextLayer").classList.remove("selected");
-      setEditTarget("pip"); // Any button click will now target PIP!
+      setEditTarget("pip"); 
     });
 
     function removeLayer(type) {
@@ -869,32 +1096,22 @@
     function applyLayerTransform(type) {
       const l = layers[type];
       const el = (type === 'text') ? document.getElementById("movableTextLayer") : document.getElementById("movablePipLayer");
-      el.style.left = (l.relX * 100) + "%";
-      el.style.top = (l.relY * 100) + "%";
+      el.style.left = (l.relX * 100) + "%"; el.style.top = (l.relY * 100) + "%";
       el.style.transform = `translate(-50%, -50%) rotate(${l.rotation}deg)`;
     }
 
     function attachLayerDrag(type) {
       const el = (type === 'text') ? document.getElementById("movableTextLayer") : document.getElementById("movablePipLayer");
-      
       const onStart = (e) => {
         if (e.target.closest('.layer-handle')) return;
-        bringToFront(el.id); // Dynamic Z-Index logic attached
-
+        bringToFront(el.id); 
         const isTouch = e.type.startsWith('touch');
         const startX = isTouch ? e.touches[0].clientX : e.clientX;
         const startY = isTouch ? e.touches[0].clientY : e.clientY;
         const rect = document.getElementById("canvasBox").getBoundingClientRect();
         
-        // Unselect others and switch target
-        if(type==='text') { 
-          document.getElementById("movablePipLayer").classList.remove("selected");
-          setEditTarget('main');
-        }
-        if(type==='pip') { 
-          document.getElementById("movableTextLayer").classList.remove("selected");
-          setEditTarget('pip');
-        }
+        if(type==='text') { document.getElementById("movablePipLayer").classList.remove("selected"); setEditTarget('main'); }
+        if(type==='pip') { document.getElementById("movableTextLayer").classList.remove("selected"); setEditTarget('pip'); }
 
         const onMove = (ev) => {
           const cX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
@@ -903,13 +1120,11 @@
           layers[type].relY = Math.max(0, Math.min(1, (cY - rect.top) / rect.height));
           applyLayerTransform(type);
         };
-
         const onEnd = () => {
           document.removeEventListener("mousemove", onMove); document.removeEventListener("touchmove", onMove);
           document.removeEventListener("mouseup", onEnd); document.removeEventListener("touchend", onEnd);
           saveHistory();
         };
-
         document.addEventListener("mousemove", onMove); document.addEventListener("touchmove", onMove);
         document.addEventListener("mouseup", onEnd); document.addEventListener("touchend", onEnd);
       };
@@ -920,8 +1135,7 @@
       e.stopPropagation(); e.preventDefault();
       const el = (type === 'text') ? document.getElementById("movableTextLayer") : document.getElementById("movablePipLayer");
       const rect = el.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2;
       
       const startX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
       const startY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
@@ -934,11 +1148,9 @@
       const onMove = (ev) => {
         const cX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
         const cY = ev.type.startsWith('touch') ? ev.touches[0].clientY : ev.clientY;
-        
         const newAngle = Math.atan2(cY - centerY, cX - centerX);
         const angleDiff = (newAngle - startAngle) * (180 / Math.PI);
         layers[type].rotation = startRot + angleDiff;
-
         const newDist = Math.sqrt(Math.pow(cX - centerX, 2) + Math.pow(cY - centerY, 2));
         const scale = newDist / (startDist || 1);
         
@@ -957,12 +1169,10 @@
         document.removeEventListener("mouseup", onEnd); document.removeEventListener("touchend", onEnd);
         saveHistory();
       };
-      
       document.addEventListener("mousemove", onMove); document.addEventListener("touchmove", onMove);
       document.addEventListener("mouseup", onEnd); document.addEventListener("touchend", onEnd);
     }
 
-    // === EXPORT & SAVE LOGIC ===
     function exportAndSavePhoto() {
       if (!hasImage) return;
       showLoader("Rendering High Quality Photo...");
@@ -973,11 +1183,9 @@
           canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
           const ctx = canvas.getContext("2d");
 
-          // Draw Main Image
           ctx.filter = getComputedStyle(document.getElementById("mainCanvas")).filter;
           ctx.drawImage(img, 0, 0);
 
-          // Draw PIP Image if active
           const pLayer = document.getElementById("movablePipLayer");
           if (pLayer.classList.contains("active")) {
             const pipImg = document.getElementById("pipImgDisplay");
@@ -994,7 +1202,6 @@
             ctx.restore();
           }
 
-          // Draw Text if active
           const tLayer = document.getElementById("movableTextLayer");
           if (tLayer.classList.contains("active")) {
             ctx.filter = "none";
@@ -1017,6 +1224,12 @@
           link.download = `ProEdit_${Date.now()}.jpg`;
           document.body.appendChild(link); link.click(); document.body.removeChild(link);
           hideLoader();
+          
+          // NEW: Auto redirect user directly to index.html after the download initiates
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 600);
+
         };
         img.src = currentImageSrc;
       }, 800);
