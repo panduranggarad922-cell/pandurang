@@ -146,7 +146,7 @@
     .movable-layer {
       position: absolute;
       cursor: move;
-      border: 1.5px solid transparent; /* Changed to match InShot */
+      border: 1.5px solid transparent; 
       padding: 6px;
       user-select: none;
       z-index: 100;
@@ -156,7 +156,6 @@
     }
     .movable-layer.active { display: inline-block; }
     
-    /* InShot Selected State */
     .movable-layer.selected {
       border-color: #ffffff;
       box-shadow: 0 0 8px rgba(0,0,0,0.5);
@@ -185,7 +184,6 @@
     }
     .movable-layer.selected .layer-handle { display: flex; }
     
-    /* InShot Handlers */
     .handle-delete { 
       top: -13px; left: -13px; 
       background: #ff4a4a; 
@@ -308,14 +306,14 @@
     <div id="canvasBox" class="canvas-container" style="display:none;">
       <img id="mainCanvas" src="" alt="Editing Target">
 
-      <!-- Text Overlay Layer (InShot Style) -->
+      <!-- Text Overlay Layer -->
       <div id="movableTextLayer" class="movable-layer">
         <div class="layer-handle handle-delete" onclick="removeLayer('text')"><i class="fa-solid fa-xmark"></i></div>
         <span id="textLayerDisplay">Custom Text</span>
         <div class="layer-handle handle-resize" onmousedown="initCombinedTransform(event, 'text')" ontouchstart="initCombinedTransform(event, 'text')"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
       </div>
 
-      <!-- PIP Overlay Layer (InShot Style) -->
+      <!-- PIP Overlay Layer -->
       <div id="movablePipLayer" class="movable-layer">
         <div class="layer-handle handle-delete" onclick="removeLayer('pip')"><i class="fa-solid fa-xmark"></i></div>
         <img id="pipImgDisplay" style="width:100px; height:100px; object-fit:contain; display:block; pointer-events:none;">
@@ -327,7 +325,7 @@
   <!-- EDIT PANEL ENGINE -->
   <div class="edit-panel" id="editPanel" style="opacity: 0.5; pointer-events: none;">
 
-    <!-- Sub Panel 1: Adjustments (All Old Options Kept) -->
+    <!-- Sub Panel 1: Adjustments -->
     <div id="adjustPanel" class="sub-panel">
       <div class="slider-box"><label>Brightness</label><input type="range" id="adj_brightness" min="-100" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
       <div class="slider-box"><label>Contrast</label><input type="range" id="adj_contrast" min="-100" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
@@ -344,7 +342,7 @@
       <button onclick="resetAdjustments()" style="background:var(--accent-pink); color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer;">Reset</button>
     </div>
 
-    <!-- Sub Panel 2: 18 Premium Filters -->
+    <!-- Sub Panel 2: Filters -->
     <div id="filterPanel" class="sub-panel">
       <!-- Generated via JS -->
     </div>
@@ -367,15 +365,13 @@
           <option value="Teko">Teko</option> <option value="Righteous">Righteous</option>
         </select>
       </div>
-      <!-- Right Arrow Checkmark to place text -->
       <button onclick="placeTextRightArrow()" style="background:var(--accent-cyan); color:#000; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:5px;">
         Place <i class="fa-solid fa-arrow-right"></i>
       </button>
     </div>
 
-    <!-- Sub Panel 4: Crop Controls (0px logic + Auto Sizes Added) -->
+    <!-- Sub Panel 4: Crop Controls -->
     <div id="cropPanel" class="sub-panel">
-      <!-- Added Aspect Ratios directly inside crop for convenience without removing canvas option -->
       <button class="tool-btn" onclick="setCanvasRatio('free')"><i class="fa-solid fa-expand"></i>Free</button>
       <button class="tool-btn" onclick="setCanvasRatio(NaN)"><i class="fa-solid fa-image"></i>Original</button>
       <button class="tool-btn" onclick="setCanvasRatio(1)"><i class="fa-solid fa-square"></i>1:1</button>
@@ -387,7 +383,7 @@
       <button onclick="cancelCrop()" style="background:rgba(255,255,255,0.1); color:white; border:none; padding:8px 18px; border-radius:8px; font-weight:bold; cursor:pointer;">Cancel</button>
     </div>
 
-    <!-- Sub Panel 5: Canvas Aspect Ratio (Old Option Maintained) -->
+    <!-- Sub Panel 5: Canvas Aspect Ratio -->
     <div id="canvasPanel" class="sub-panel">
       <button class="tool-btn" onclick="setCanvasRatio('free')"><i class="fa-solid fa-expand"></i>Free</button>
       <button class="tool-btn" onclick="setCanvasRatio(1)"><i class="fa-solid fa-square"></i>1:1 (Insta)</button>
@@ -418,12 +414,20 @@
   </div>
 
   <script>
-    // === APPLICATION STATE & HISTORY (Undo/Redo Logic Added) ===
+    // === APPLICATION STATE & HISTORY ===
     let originalImageSrc = null;
     let currentImageSrc = null;
     let hasImage = false;
     let cropper = null;
-    let activeFilterCss = 'none';
+    let globalZIndex = 100; // Z-Index Manager
+
+    // ACTIVE TARGET MANAGER (main or pip)
+    let activeTarget = 'main'; 
+
+    let stateStyles = {
+      main: { b: 0, c: 0, s: 0, blur: 0, h: 0, sep: 0, inv: 0, gray: 0, op: 100, w: 0, exp: 0, vib: 0, activeFilterCss: 'none' },
+      pip: { b: 0, c: 0, s: 0, blur: 0, h: 0, sep: 0, inv: 0, gray: 0, op: 100, w: 0, exp: 0, vib: 0, activeFilterCss: 'none' }
+    };
 
     let layers = {
       text: { relX: 0.1, relY: 0.2, rotation: 0, fontSize: 28 },
@@ -460,14 +464,37 @@
       renderFilterCards();
     });
 
+    // Z-INDEX Function to bring selected layer above
+    function bringToFront(layerId) {
+      globalZIndex++;
+      document.getElementById(layerId).style.zIndex = globalZIndex;
+    }
+
+    // TARGET EDITOR LOGIC (Switch between PIP and Main Image)
+    function setEditTarget(target) {
+      activeTarget = target;
+      let st = stateStyles[target];
+      document.getElementById("adj_brightness").value = st.b;
+      document.getElementById("adj_contrast").value = st.c;
+      document.getElementById("adj_saturation").value = st.s;
+      document.getElementById("adj_blur").value = st.blur;
+      document.getElementById("adj_hue").value = st.h;
+      document.getElementById("adj_sepia").value = st.sep;
+      document.getElementById("adj_invert").value = st.inv;
+      document.getElementById("adj_grayscale").value = st.gray;
+      document.getElementById("adj_opacity").value = st.op;
+      document.getElementById("adj_warmth").value = st.w;
+      document.getElementById("adj_exposure").value = st.exp;
+      document.getElementById("adj_vibrance").value = st.vib;
+      renderFilterCards();
+    }
+
     // === SAVE, UNDO & REDO CORE ENGINE ===
     function saveHistory() {
       if(isRestoring || !hasImage) return;
       const state = {
-        img: currentImageSrc, filter: activeFilterCss,
-        sliders: ['brightness','contrast','saturation','blur','hue','sepia','invert','grayscale','opacity','warmth','exposure','vibrance'].reduce((acc, val) => {
-          acc[val] = document.getElementById("adj_"+val).value; return acc;
-        }, {}),
+        img: currentImageSrc,
+        stateStyles: JSON.parse(JSON.stringify(stateStyles)),
         textActive: document.getElementById("movableTextLayer").classList.contains("active"),
         textVal: document.getElementById("textLayerDisplay").innerText,
         textColor: document.getElementById("textLayerDisplay").style.color,
@@ -494,11 +521,17 @@
       isRestoring = true;
       currentImageSrc = s.img;
       document.getElementById("mainCanvas").src = currentImageSrc;
-      activeFilterCss = s.filter;
       
-      Object.keys(s.sliders).forEach(k => document.getElementById("adj_"+k).value = s.sliders[k]);
-      applyEffects();
-      renderFilterCards();
+      stateStyles = JSON.parse(JSON.stringify(s.stateStyles));
+      setEditTarget(activeTarget); // Updates UI for current selection
+
+      // Force apply filters from restored state for both Main and PIP
+      ["main", "pip"].forEach(t => {
+        let st = stateStyles[t];
+        let filter = (st.activeFilterCss !== 'none' ? st.activeFilterCss + " " : "") + `brightness(${100 + Number(st.b) + Number(st.exp)}%) contrast(${100 + Number(st.c)}%) saturate(${100 + Number(st.s) + Number(st.vib)}%) blur(${st.blur}px) hue-rotate(${Number(st.h) + Number(st.w)}deg) sepia(${st.sep}%) invert(${st.inv}%) grayscale(${st.gray}%) opacity(${st.op}%) `;
+        let el = t === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
+        el.style.filter = filter;
+      });
 
       const tL = document.getElementById("movableTextLayer");
       if(s.textActive) {
@@ -525,11 +558,11 @@
 
     // === OUTSIDE CLICK TO CLOSE PANELS & SAVE ===
     document.getElementById("workspaceWrapper").addEventListener('click', function(e) {
-      // If user taps in the blank workspace or on canvas, hide popups and unselect layers.
       if (e.target.id === 'workspaceWrapper' || e.target.id === 'mainCanvas' || e.target.id === 'canvasBox') {
         document.querySelectorAll(".sub-panel").forEach(p => p.classList.remove("active"));
         document.getElementById("movableTextLayer").classList.remove("selected");
         document.getElementById("movablePipLayer").classList.remove("selected");
+        setEditTarget('main'); // Reset edit target to main image when nothing is selected
       }
     });
 
@@ -537,12 +570,17 @@
     function renderFilterCards() {
       const panel = document.getElementById("filterPanel");
       panel.innerHTML = "";
+      
+      let currentFilterCss = stateStyles[activeTarget].activeFilterCss;
+      // Show correct preview image on filters depending on what is selected
+      let previewSrc = activeTarget === 'pip' ? document.getElementById("pipImgDisplay").src : (currentImageSrc || 'https://via.placeholder.com/100');
+
       filterPresets.forEach((p, idx) => {
         const card = document.createElement("div");
-        card.className = "filter-card" + (p.filter === activeFilterCss || (idx===0 && activeFilterCss==='none') ? " active" : "");
+        card.className = "filter-card" + (p.filter === currentFilterCss || (idx===0 && currentFilterCss==='none') ? " active" : "");
         card.onclick = () => selectFilter(p.filter, card);
         card.innerHTML = `
-          <div class="filter-preview-box" style="filter: ${p.filter}; background-image: url('${currentImageSrc || 'https://via.placeholder.com/100'}');"></div>
+          <div class="filter-preview-box" style="filter: ${p.filter}; background-image: url('${previewSrc}');"></div>
           <span>${p.name}</span>
         `;
         panel.appendChild(card);
@@ -577,46 +615,53 @@
         const topBtn = document.getElementById("topActionButton");
         topBtn.classList.add("save-mode");
         topBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Save Photo</span>`;
-        renderFilterCards();
-        saveHistory(); // Save initial state
+        setEditTarget('main');
+        saveHistory(); 
         hideLoader();
       }, 600);
     }
 
     // === EDITING ENGINE & ADJUSTMENTS ===
-    function applyEffects() {
+    function applyEffects(isTargetSwitch = false) {
       if (!hasImage) return;
-      const b = document.getElementById("adj_brightness").value;
-      const c = document.getElementById("adj_contrast").value;
-      const s = document.getElementById("adj_saturation").value;
-      const blur = document.getElementById("adj_blur").value;
-      const h = document.getElementById("adj_hue").value;
-      const sep = document.getElementById("adj_sepia").value;
-      const inv = document.getElementById("adj_invert").value;
-      const gray = document.getElementById("adj_grayscale").value;
-      const op = document.getElementById("adj_opacity").value;
-      const w = document.getElementById("adj_warmth").value;
-      const exp = document.getElementById("adj_exposure").value;
-      const vib = document.getElementById("adj_vibrance").value;
+      
+      let st = stateStyles[activeTarget];
 
-      let customChain = `brightness(${100 + Number(b) + Number(exp)}%) contrast(${100 + Number(c)}%) saturate(${100 + Number(s) + Number(vib)}%) blur(${blur}px) hue-rotate(${Number(h) + Number(w)}deg) sepia(${sep}%) invert(${inv}%) grayscale(${gray}%) opacity(${op}%) `;
-      const fullFilterStr = (activeFilterCss !== 'none' ? activeFilterCss + " " : "") + customChain;
-      document.getElementById("mainCanvas").style.filter = fullFilterStr;
+      if (!isTargetSwitch) {
+        st.b = document.getElementById("adj_brightness").value;
+        st.c = document.getElementById("adj_contrast").value;
+        st.s = document.getElementById("adj_saturation").value;
+        st.blur = document.getElementById("adj_blur").value;
+        st.h = document.getElementById("adj_hue").value;
+        st.sep = document.getElementById("adj_sepia").value;
+        st.inv = document.getElementById("adj_invert").value;
+        st.gray = document.getElementById("adj_grayscale").value;
+        st.op = document.getElementById("adj_opacity").value;
+        st.w = document.getElementById("adj_warmth").value;
+        st.exp = document.getElementById("adj_exposure").value;
+        st.vib = document.getElementById("adj_vibrance").value;
+      }
+
+      let customChain = `brightness(${100 + Number(st.b) + Number(st.exp)}%) contrast(${100 + Number(st.c)}%) saturate(${100 + Number(st.s) + Number(st.vib)}%) blur(${st.blur}px) hue-rotate(${Number(st.h) + Number(st.w)}deg) sepia(${st.sep}%) invert(${st.inv}%) grayscale(${st.gray}%) opacity(${st.op}%) `;
+      const fullFilterStr = (st.activeFilterCss !== 'none' ? st.activeFilterCss + " " : "") + customChain;
+      
+      let targetEl = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
+      targetEl.style.filter = fullFilterStr;
     }
 
     function selectFilter(filterStr, cardEl) {
       document.querySelectorAll(".filter-card").forEach(c => c.classList.remove("active"));
       if (cardEl) cardEl.classList.add("active");
-      activeFilterCss = filterStr;
+      stateStyles[activeTarget].activeFilterCss = filterStr;
       applyEffects();
-      saveHistory(); // Save history on filter change
+      saveHistory(); 
     }
 
     function resetAdjustments() {
-      const sliders = ['brightness', 'contrast', 'saturation', 'blur', 'hue', 'sepia', 'invert', 'grayscale', 'warmth', 'exposure', 'vibrance'];
-      sliders.forEach(s => { const el = document.getElementById("adj_" + s); if (el) el.value = 0; });
-      document.getElementById("adj_opacity").value = 100;
-      applyEffects();
+      let st = stateStyles[activeTarget];
+      st.b = 0; st.c = 0; st.s = 0; st.blur = 0; st.h = 0; st.sep = 0; st.inv = 0; st.gray = 0; st.op = 100; st.w = 0; st.exp = 0; st.vib = 0;
+      setEditTarget(activeTarget);
+      applyEffects(true);
       saveHistory();
     }
 
@@ -628,35 +673,64 @@
       if (!isOpen) panel.classList.add("active");
     }
 
-    // === CROPPER JS INTEGRATION (0px Selection Logic added) ===
+    // === CROPPER JS INTEGRATION ===
     function startCropMode() {
       if (!hasImage) return;
       toggleSubPanel("cropPanel");
-      const img = document.getElementById("mainCanvas");
+      
+      const img = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
       if (cropper) cropper.destroy();
+      
       cropper = new Cropper(img, {
         viewMode: 1,
-        autoCropArea: 1, // Changed from 0.8 to 1 for 0px from edges logic requested
-        background: false
+        autoCropArea: 1, 
+        dragMode: 'none', // Fixes issue: user can now only drag from edges, cannot create new box on canvas
+        background: false,
+        ready: function() {
+          // Fixes issue: Filters gayab hone ka problem, cropper pe same filter apply kar dia
+          const filterStr = img.style.filter;
+          const cropCanvasImg = document.querySelector('.cropper-canvas img');
+          const cropViewImg = document.querySelector('.cropper-view-box img');
+          if (cropCanvasImg) cropCanvasImg.style.filter = filterStr;
+          if (cropViewImg) cropViewImg.style.filter = filterStr;
+        }
       });
     }
+
     function applyCrop() {
       if (!cropper) return;
       showLoader("Cropping Image...");
       setTimeout(() => {
-        currentImageSrc = cropper.getCroppedCanvas().toDataURL("image/jpeg", 0.95);
-        document.getElementById("mainCanvas").src = currentImageSrc;
+        const croppedUrl = cropper.getCroppedCanvas().toDataURL("image/jpeg", 0.95);
+        const targetImg = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
+        
+        // Save current active filters so they don't reset
+        const currentFilter = targetImg.style.filter;
+
+        if (activeTarget === 'pip') {
+            targetImg.src = croppedUrl;
+        } else {
+            currentImageSrc = croppedUrl;
+            targetImg.src = currentImageSrc;
+        }
+        
+        // Reapply filter
+        targetImg.style.filter = currentFilter;
+        
         killCropper();
         renderFilterCards();
-        saveHistory(); // Save post crop
+        saveHistory(); 
         hideLoader();
       }, 400);
     }
+
     function cancelCrop() { killCropper(); }
+    
     function killCropper() {
       if (cropper) { cropper.destroy(); cropper = null; }
       document.getElementById("cropPanel").classList.remove("active");
     }
+    
     function setCanvasRatio(ratio) {
       if (!hasImage) return;
       if (!cropper) startCropMode();
@@ -664,10 +738,10 @@
       else cropper.setAspectRatio(ratio);
     }
 
-    // === ROTATE & FLIP ===
+    // === ROTATE & FLIP (Dynamically Targets Main or PIP) ===
     function rotateImage(deg) {
       if (!hasImage) return;
-      const img = document.getElementById("mainCanvas");
+      const targetImg = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       const image = new Image();
@@ -676,16 +750,22 @@
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate((deg * Math.PI) / 180);
         ctx.drawImage(image, -image.width / 2, -image.height / 2);
-        currentImageSrc = canvas.toDataURL("image/jpeg", 0.95);
-        img.src = currentImageSrc; renderFilterCards();
+        const newSrc = canvas.toDataURL("image/jpeg", 0.95);
+        if (activeTarget === 'pip') {
+            targetImg.src = newSrc;
+        } else {
+            currentImageSrc = newSrc;
+            targetImg.src = currentImageSrc; 
+            renderFilterCards();
+        }
         saveHistory();
       };
-      image.src = currentImageSrc;
+      image.src = targetImg.src;
     }
 
     function flipImage(dir) {
       if (!hasImage) return;
-      const img = document.getElementById("mainCanvas");
+      const targetImg = activeTarget === 'pip' ? document.getElementById("pipImgDisplay") : document.getElementById("mainCanvas");
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       const image = new Image();
@@ -694,15 +774,19 @@
         ctx.translate(dir === 'h' ? canvas.width : 0, dir === 'v' ? canvas.height : 0);
         ctx.scale(dir === 'h' ? -1 : 1, dir === 'v' ? -1 : 1);
         ctx.drawImage(image, 0, 0);
-        currentImageSrc = canvas.toDataURL("image/jpeg", 0.95);
-        img.src = currentImageSrc; saveHistory();
+        const newSrc = canvas.toDataURL("image/jpeg", 0.95);
+        if (activeTarget === 'pip') {
+            targetImg.src = newSrc;
+        } else {
+            currentImageSrc = newSrc;
+            targetImg.src = currentImageSrc; 
+        }
+        saveHistory();
       };
-      image.src = currentImageSrc;
+      image.src = targetImg.src;
     }
 
-    // === MOVABLE LAYERS (TEXT & PIP INSHOT STYLE) ===
-    
-    // Live Text Logic added
+    // === MOVABLE LAYERS (TEXT & PIP) ===
     function activateTextTool() {
       if (!hasImage) return;
       toggleSubPanel('textPanel');
@@ -714,6 +798,8 @@
       } else {
         el.classList.add("selected");
       }
+      bringToFront("movableTextLayer"); // Z-Index up
+      setEditTarget("main"); // Text cannot have image filters
       document.getElementById("textInputVal").focus();
       attachLayerDrag('text');
     }
@@ -732,15 +818,17 @@
     function placeTextRightArrow() {
       document.getElementById("movableTextLayer").classList.remove("selected");
       document.getElementById("textPanel").classList.remove("active");
-      saveHistory(); // Save action mapped to right arrow
+      saveHistory();
     }
 
-    // Touch Text to re-edit
     document.getElementById("movableTextLayer").addEventListener('click', (e) => {
       if(e.target.classList.contains('layer-handle')) return;
+      bringToFront("movableTextLayer"); // Fixes text vs pip overlap problem
       document.getElementById("movableTextLayer").classList.add("selected");
+      document.getElementById("movablePipLayer").classList.remove("selected");
       toggleSubPanel('textPanel');
       document.getElementById("textInputVal").value = document.getElementById("textLayerDisplay").innerText;
+      setEditTarget("main"); 
     });
 
     function spawnPipOverlay(e) {
@@ -750,6 +838,14 @@
       document.getElementById("pipImgDisplay").src = url;
       const el = document.getElementById("movablePipLayer");
       el.classList.add("active", "selected");
+      
+      // Reset PIP properties for new import
+      stateStyles.pip = { b: 0, c: 0, s: 0, blur: 0, h: 0, sep: 0, inv: 0, gray: 0, op: 100, w: 0, exp: 0, vib: 0, activeFilterCss: 'none' };
+      document.getElementById("pipImgDisplay").style.filter = 'none';
+      
+      bringToFront("movablePipLayer");
+      setEditTarget("pip"); // Set focus immediately so edits apply to PIP
+
       applyLayerTransform('pip');
       attachLayerDrag('pip');
       saveHistory();
@@ -757,12 +853,16 @@
 
     document.getElementById("movablePipLayer").addEventListener('click', (e) => {
       if(e.target.classList.contains('layer-handle')) return;
+      bringToFront("movablePipLayer"); // Fixes text vs pip overlap problem
       document.getElementById("movablePipLayer").classList.add("selected");
+      document.getElementById("movableTextLayer").classList.remove("selected");
+      setEditTarget("pip"); // Any button click will now target PIP!
     });
 
     function removeLayer(type) {
       const el = (type === 'text') ? document.getElementById("movableTextLayer") : document.getElementById("movablePipLayer");
       el.classList.remove("active", "selected");
+      if(type === 'pip') setEditTarget('main');
       saveHistory();
     }
 
@@ -779,14 +879,22 @@
       
       const onStart = (e) => {
         if (e.target.closest('.layer-handle')) return;
+        bringToFront(el.id); // Dynamic Z-Index logic attached
+
         const isTouch = e.type.startsWith('touch');
         const startX = isTouch ? e.touches[0].clientX : e.clientX;
         const startY = isTouch ? e.touches[0].clientY : e.clientY;
         const rect = document.getElementById("canvasBox").getBoundingClientRect();
         
-        // Unselect others
-        if(type==='text') document.getElementById("movablePipLayer").classList.remove("selected");
-        if(type==='pip') document.getElementById("movableTextLayer").classList.remove("selected");
+        // Unselect others and switch target
+        if(type==='text') { 
+          document.getElementById("movablePipLayer").classList.remove("selected");
+          setEditTarget('main');
+        }
+        if(type==='pip') { 
+          document.getElementById("movableTextLayer").classList.remove("selected");
+          setEditTarget('pip');
+        }
 
         const onMove = (ev) => {
           const cX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
@@ -808,7 +916,6 @@
       el.onmousedown = onStart; el.ontouchstart = onStart;
     }
 
-    // InShot style combined Resize & Rotate handle Logic
     function initCombinedTransform(e, type) {
       e.stopPropagation(); e.preventDefault();
       const el = (type === 'text') ? document.getElementById("movableTextLayer") : document.getElementById("movablePipLayer");
@@ -828,12 +935,10 @@
         const cX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
         const cY = ev.type.startsWith('touch') ? ev.touches[0].clientY : ev.clientY;
         
-        // Calculate Rotation
         const newAngle = Math.atan2(cY - centerY, cX - centerX);
         const angleDiff = (newAngle - startAngle) * (180 / Math.PI);
         layers[type].rotation = startRot + angleDiff;
 
-        // Calculate Scale
         const newDist = Math.sqrt(Math.pow(cX - centerX, 2) + Math.pow(cY - centerY, 2));
         const scale = newDist / (startDist || 1);
         
@@ -868,9 +973,28 @@
           canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
           const ctx = canvas.getContext("2d");
 
+          // Draw Main Image
           ctx.filter = getComputedStyle(document.getElementById("mainCanvas")).filter;
           ctx.drawImage(img, 0, 0);
 
+          // Draw PIP Image if active
+          const pLayer = document.getElementById("movablePipLayer");
+          if (pLayer.classList.contains("active")) {
+            const pipImg = document.getElementById("pipImgDisplay");
+            ctx.save();
+            ctx.filter = getComputedStyle(pipImg).filter; 
+            ctx.translate(canvas.width * layers.pip.relX, canvas.height * layers.pip.relY);
+            ctx.rotate((layers.pip.rotation * Math.PI) / 180);
+            
+            const pipRatio = layers.pip.width / document.getElementById("canvasBox").clientWidth; 
+            const pipRenderWidth = canvas.width * pipRatio;
+            const pipRenderHeight = pipRenderWidth * (pipImg.naturalHeight / pipImg.naturalWidth);
+            
+            ctx.drawImage(pipImg, -pipRenderWidth/2, -pipRenderHeight/2, pipRenderWidth, pipRenderHeight);
+            ctx.restore();
+          }
+
+          // Draw Text if active
           const tLayer = document.getElementById("movableTextLayer");
           if (tLayer.classList.contains("active")) {
             ctx.filter = "none";
@@ -902,10 +1026,11 @@
       if (!confirm("Are you sure you want to reset all edits?")) return;
       currentImageSrc = originalImageSrc;
       document.getElementById("mainCanvas").src = originalImageSrc;
+      setEditTarget('main');
       resetAdjustments();
       selectFilter('none', document.querySelectorAll(".filter-card")[0]);
       removeLayer('text'); removeLayer('pip');
-      saveHistory(); // Save the reset state to history
+      saveHistory(); 
     }
   </script>
 </body>
