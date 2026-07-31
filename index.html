@@ -1029,7 +1029,7 @@
       const el = document.getElementById("movableTextLayer");
       if (!el.classList.contains("active")) {
         el.classList.add("active", "selected");
-        document.getElementById("textInputVal").value = "Custom Text";
+        document.getElementById("textInputVal").value = "";
         updateLiveText();
       } else { el.classList.add("selected"); }
       bringToFront("movableTextLayer"); 
@@ -1039,12 +1039,16 @@
     }
 
     function updateLiveText() {
-      const val = document.getElementById("textInputVal").value;
-      const color = document.getElementById("textColorVal").value;
-      const font = document.getElementById("textFontVal").value;
-      const display = document.getElementById("textLayerDisplay");
-      display.innerText = val || " "; display.style.color = color; display.style.fontFamily = font;
-    }
+  const val = document.getElementById("textInputVal").value;
+  const color = document.getElementById("textColorVal").value;
+  const font = document.getElementById("textFontVal").value;
+  const display = document.getElementById("textLayerDisplay");
+  
+  display.innerText = val || " "; 
+  display.style.color = color; 
+  // FIX: Font variable ko quotes ( " " ) mein wrap kiya gaya hai
+  display.style.fontFamily = `"${font}", sans-serif`; 
+}
 
     function placeTextRightArrow() {
       document.getElementById("movableTextLayer").classList.remove("selected");
