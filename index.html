@@ -967,15 +967,20 @@
       });
     }
 
-    function addOverlayText(text, color, font) {
-       activateTextTool();
-       document.getElementById("textInputVal").value = text;
-       document.getElementById("textColorVal").value = color;
-       document.getElementById("textFontVal").value = "Inter"; 
-       updateLiveText();
-       document.getElementById("textLayerDisplay").style.fontFamily = font;
-       document.getElementById("textLayerDisplay").innerText = text;
-    }
+   function addOverlayText(text, color, font) {
+   activateTextTool();
+   document.getElementById("textInputVal").value = text;
+   document.getElementById("textColorVal").value = color;
+   
+   // FIX: "Inter" ki jagah 'font' parameter pass karein taaki dropdown sync rahe
+   document.getElementById("textFontVal").value = font; 
+   
+   updateLiveText();
+   
+   // FIX: Yahan bhi font ko quotes ke andar rakhein
+   document.getElementById("textLayerDisplay").style.fontFamily = `"${font}", sans-serif`;
+   document.getElementById("textLayerDisplay").innerText = text;
+}
 
     function triggerAdvancedEffect(idx) {
       if(!hasImage) return;
@@ -1210,7 +1215,7 @@
           if (tLayer.classList.contains("active")) {
             ctx.filter = "none";
             const textVal = document.getElementById("textLayerDisplay").innerText;
-            ctx.font = `bold ${layers.text.fontSize * (canvas.width/document.getElementById("mainCanvas").clientWidth)}px ${document.getElementById("textFontVal").value}, sans-serif`;
+            ctx.font = `bold ${layers.text.fontSize * (canvas.width/document.getElementById("mainCanvas").clientWidth)}px "${document.getElementById("textFontVal").value}", sans-serif`;
             ctx.fillStyle = document.getElementById("textColorVal").value;
             ctx.shadowColor = "rgba(0,0,0,0.8)"; ctx.shadowBlur = 10;
             
