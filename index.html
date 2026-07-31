@@ -329,7 +329,7 @@
 
     <div id="textPanel" class="sub-panel">
       <div class="text-controls">
-        <input type="text" id="textInputVal" placeholder="Type here..." oninput="updateLiveText()">
+        <textarea id="textInputVal" placeholder="Type here..." oninput="updateLiveText()" style="background: transparent; border: none; color: white; outline: none; width: 160px; height: 35px; resize: none; font-family: inherit; vertical-align: middle;"></textarea>
         <input type="color" id="textColorVal" value="#ffffff" oninput="updateLiveText()">
         <select id="textFontVal" onchange="updateLiveText()">
           <option value="Inter">𝘐𝘯𝘵𝘦𝘳</option> <option value="Roboto">𝗥𝗼𝗯𝗼𝘁𝗼</option>
@@ -617,7 +617,7 @@
           if(item.type === 'text') {
             div.innerHTML = `
               <div class="layer-handle handle-delete" onclick="removeLayer('${id}')"><i class="fa-solid fa-xmark"></i></div>
-              <span id="${id}_span" style="font-size: ${item.fontSize}px; font-weight: 800; color: ${item.color || '#ffffff'}; white-space: nowrap; text-shadow: 0 2px 10px rgba(0,0,0,0.8); font-family: ${item.font || "'Inter', sans-serif"};">${item.val || ''}</span>
+             <span id="${id}_span" style="font-size: ${item.fontSize}px; font-weight: 800; color: ${item.color || '#ffffff'}; white-space: pre-wrap; text-shadow: 0 2px 10px rgba(0,0,0,0.8); font-family: ${item.font || "'Inter', sans-serif"};">${item.val || ''}</span>
               <div class="layer-handle handle-resize" onmousedown="initCombinedTransform(event, '${id}')" ontouchstart="initCombinedTransform(event, '${id}')"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
             `;
           } else {
@@ -979,7 +979,7 @@
       div.className = "movable-layer text-layer active selected";
       div.innerHTML = `
         <div class="layer-handle handle-delete" onclick="removeLayer('${layerId}')"><i class="fa-solid fa-xmark"></i></div>
-        <span id="${layerId}_span" style="font-size: 28px; font-weight: 800; color: #ffffff; white-space: nowrap; text-shadow: 0 2px 10px rgba(0,0,0,0.8); font-family: 'Inter', sans-serif;">New Text</span>
+        <span id="${layerId}_span" style="font-size: 28px; font-weight: 800; color: #ffffff; white-space: pre-wrap; text-shadow: 0 2px 10px rgba(0,0,0,0.8); font-family: 'Inter', sans-serif;">New Text</span>
         <div class="layer-handle handle-resize" onmousedown="initCombinedTransform(event, '${layerId}')" ontouchstart="initCombinedTransform(event, '${layerId}')"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
       `;
 
@@ -1232,10 +1232,17 @@
               ctx.shadowBlur = 10;
               
               ctx.translate(canvas.width * l.relX, canvas.height * l.relY);
-              ctx.rotate((l.rotation * Math.PI) / 180);
-              ctx.textAlign = "center"; 
-              ctx.textBaseline = "middle";
-              ctx.fillText(textVal, 0, 0);
+ctx.rotate((l.rotation * Math.PI) / 180);
+ctx.textAlign = "center"; 
+ctx.textBaseline = "middle";
+
+// Multi-line rendering logic for Canvas
+const lines = textVal.split('\n');
+const lineHeight = fontSizeInCanvas * 1.2;
+const startY = -((lines.length - 1) * lineHeight) / 2;
+lines.forEach((line, index) => {
+  ctx.fillText(line, 0, startY + (index * lineHeight));
+});
               ctx.restore();
             }
           });
