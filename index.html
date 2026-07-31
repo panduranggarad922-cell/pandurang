@@ -510,35 +510,14 @@
           mCtx.globalCompositeOperation='source-in'; mCtx.drawImage(tCan,0,0);
           ctx.drawImage(mCan,0,0); return false;
       }},
+      { name: "VHS Tape", icon: "fa-compact-disc", type: "canvas", fn: (d, w, h, ctx) => { let c = new Uint8ClampedArray(d); for(let i=0; i<d.length; i+=4) if(i+32 < d.length) { d[i]=c[i+32]; } ctx.putImageData(new ImageData(d,w,h),0,0); ctx.fillStyle="rgba(0,0,0,0.2)"; for(let y=0; y<h; y+=3) ctx.fillRect(0,y,w,1); return false; } },
+      { name: "CRT Scanlines", icon: "fa-tv", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="rgba(0,0,0,0.3)"; for(let y=0; y<h; y+=4) ctx.fillRect(0,y,w,1); return false; } }, 
       { name: "Snap Day", icon: "fa-calendar-day", action: () => addOverlayText(new Date().toLocaleDateString('en-US', {weekday: 'long'}), "#ffffff", "Dancing Script") },
-      { name: "Neon Time", icon: "fa-clock", action: () => addOverlayText(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), "#fff200", "Teko") },
-      { name: "Austin Filter", icon: "fa-location-dot", action: () => addOverlayText("Austin\n" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), "#ffffff", "Caveat") },
-      { name: "Snap Date", icon: "fa-calendar", action: () => addOverlayText(new Date().toLocaleDateString(), "#ffffff", "Pacifico") },
-      { name: "Doodle Heart", icon: "fa-heart", action: () => addOverlayText("🤍", "#ffffff", "Inter") },
-      { name: "Golden Hour", icon: "fa-cloud-sun", type: "canvas", fn: (d, w, h, ctx) => { 
-          for(let i=0; i<d.length; i+=4) { d[i]=Math.min(255,d[i]*1.2); d[i+1]=Math.min(255,d[i+1]*1.1); } 
-          ctx.putImageData(new ImageData(d,w,h),0,0); 
-          let g=ctx.createRadialGradient(w/2,h/2,w/4,w/2,h/2,w); 
-          g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(50,20,0,0.6)"); 
-          ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return false; 
-      }},
-      { name: "Cinematic Bars", icon: "fa-film", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="#000"; ctx.fillRect(0,0,w,h*0.12); ctx.fillRect(0,h-h*0.12,w,h*0.12); return false; } },
-      { name: "Polaroid Frame", icon: "fa-image-portrait", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="#fff"; let b=w*0.05; ctx.fillRect(0,0,w,b); ctx.fillRect(0,0,b,h); ctx.fillRect(w-b,0,b,h); ctx.fillRect(0,h-b*3,w,b*3); return false; } },
-      { name: "Cam REC", icon: "fa-video", action: () => addOverlayText("🔴 REC", "#ff0000", "Inter") },
       { name: "Glitch Shift", icon: "fa-bolt", type: "canvas", fn: (d, w, h) => { let c = new Uint8ClampedArray(d); for(let i=0; i<d.length; i+=4) if(i+60 < d.length) { d[i]=c[i+60]; d[i+2]=c[Math.max(0,i-60+2)]; } } },
       { name: "Film Grain", icon: "fa-braille", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let n = (Math.random()-0.5)*40; d[i]=Math.min(255,Math.max(0,d[i]+n)); d[i+1]=Math.min(255,Math.max(0,d[i+1]+n)); d[i+2]=Math.min(255,Math.max(0,d[i+2]+n)); } } },
       { name: "Dark Vignette", icon: "fa-circle-dot", type: "canvas", fn: (d, w, h, ctx) => { let g = ctx.createRadialGradient(w/2,h/2,w/4,w/2,h/2,w/1.2); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,0.85)"); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return false; } },
       { name: "Light Vignette", icon: "fa-circle", type: "canvas", fn: (d, w, h, ctx) => { let g = ctx.createRadialGradient(w/2,h/2,w/4,w/2,h/2,w/1.2); g.addColorStop(0,"rgba(255,255,255,0)"); g.addColorStop(1,"rgba(255,255,255,0.7)"); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return false; } },
-      { name: "Pixelate", icon: "fa-table-cells", type: "canvas", fn: (d, w, h, ctx) => { let s=12; let c=document.createElement('canvas'); c.width=w/s; c.height=h/s; c.getContext('2d').drawImage(ctx.canvas,0,0,w/s,h/s); ctx.imageSmoothingEnabled=false; ctx.drawImage(c,0,0,w,h); return false; } },
-      { name: "CRT Scanlines", icon: "fa-tv", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="rgba(0,0,0,0.3)"; for(let y=0; y<h; y+=4) ctx.fillRect(0,y,w,1); return false; } },
-      { name: "Duotone Cyan", icon: "fa-palette", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let l=(d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11)/255; d[i]=0; d[i+1]=l*255; d[i+2]=l*255; } } },
-      { name: "Duotone Red", icon: "fa-palette", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let l=(d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11)/255; d[i]=255*l; d[i+1]=0; d[i+2]=50*l; } } },
-      { name: "Posterize", icon: "fa-layer-group", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { d[i]=Math.round(d[i]/64)*64; d[i+1]=Math.round(d[i+1]/64)*64; d[i+2]=Math.round(d[i+2]/64)*64; } } },
-      { name: "Neon Glow", icon: "fa-lightbulb", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { d[i]=Math.min(255,d[i]*1.5); d[i+2]=Math.min(255,d[i+2]*1.5); } } },
-      { name: "Sepia Scratch", icon: "fa-grip-lines-vertical", type: "canvas", fn: (d, w, h, ctx) => { ctx.fillStyle="rgba(100,70,30,0.2)"; ctx.fillRect(0,0,w,h); ctx.fillStyle="rgba(255,255,255,0.6)"; for(let i=0;i<40;i++) ctx.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*2,Math.random()*h*0.3); return false; } },
-      { name: "VHS Tape", icon: "fa-compact-disc", type: "canvas", fn: (d, w, h, ctx) => { let c = new Uint8ClampedArray(d); for(let i=0; i<d.length; i+=4) if(i+32 < d.length) { d[i]=c[i+32]; } ctx.putImageData(new ImageData(d,w,h),0,0); ctx.fillStyle="rgba(0,0,0,0.2)"; for(let y=0; y<h; y+=3) ctx.fillRect(0,y,w,1); return false; } },
-      { name: "Night Vision", icon: "fa-eye", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let l=(d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11); d[i]=0; d[i+1]=l*1.5; d[i+2]=0; } } },
-      { name: "Thermal Cam", icon: "fa-temperature-high", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { let l=(d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11); d[i]=l>128?255:l*2; d[i+1]=l>128?(l-128)*2:0; d[i+2]=l<128?255-l*2:0; } } }
+      { name: "Posterize", icon: "fa-layer-group", type: "canvas", fn: (d) => { for(let i=0; i<d.length; i+=4) { d[i]=Math.round(d[i]/64)*64; d[i+1]=Math.round(d[i+1]/64)*64; d[i+2]=Math.round(d[i+2]/64)*64; } } }
     ];
 
     document.addEventListener("DOMContentLoaded", () => {
