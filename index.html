@@ -183,7 +183,7 @@
       transform: translateY(-5px);
     }
 
-    /* For Mobile Touch (Active Class added via JS for 0.5s) */
+    /* For Mobile Touch */
     .tool-card.glow-active {
       transform: scale(0.95);
     }
@@ -212,7 +212,6 @@
       box-shadow: 0 0 40px rgba(0, 255, 136, 0.8), inset 0 0 20px rgba(0, 255, 136, 0.5);
     }
 
-    /* Add a subtle shine overlay that flashes */
     .tool-card::after {
       content: '';
       position: absolute;
@@ -262,10 +261,10 @@
     .loader-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.6); /* Transparent enough to see the glowing button */
+      background: rgba(0, 0, 0, 0.6); 
       backdrop-filter: blur(2px);
       z-index: 1000;
-      display: none; /* Hidden by default */
+      display: none; 
       justify-content: center;
       align-items: center;
       flex-direction: column;
@@ -279,7 +278,6 @@
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      /* Premium 4-color animated gradient ring */
       background: conic-gradient(var(--accent-pink), var(--accent-cyan), var(--accent-green), var(--accent-purple), var(--accent-pink));
       -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #fff 0);
       mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #fff 0);
@@ -394,22 +392,27 @@
   </footer>
 
   <script>
+    // Ye function page load ya BACK aane par sab clear karega
+    window.addEventListener('pageshow', function() {
+      document.getElementById('loaderOverlay').classList.remove('active');
+      
+      const cards = document.querySelectorAll('.tool-card');
+      cards.forEach(card => card.classList.remove('glow-active'));
+    });
+
     function handleNav(event, url) {
-      // Direct navigation ko roko
       event.preventDefault();
       
-      // Button par glow effect lagao
       const card = event.currentTarget;
       card.classList.add('glow-active');
       
-      // Full screen colorful loader chalu karo
       const loader = document.getElementById('loaderOverlay');
       loader.classList.add('active');
       
-      // Exactly 0.5 seconds (500ms) baad next file open karo
+      // Delay ko 0.2 seconds (200 milliseconds) kar diya hai
       setTimeout(() => {
         window.location.href = url;
-      }, 500);
+      }, 200); 
     }
   </script>
 
