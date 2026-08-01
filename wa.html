@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Status Downloader</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+    :root {
+      --bg-deep: #05050f;
+      --card-glass: rgba(16, 18, 27, 0.6);
+      --accent-cyan: #00f0ff;
+      --accent-pink: #ff007c;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glow: rgba(0, 240, 255, 0.2);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-deep);
+      color: var(--text-light);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* === ANIMATED BACKGROUND ORBS === */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: -1;
+      animation: floatOrb 10s infinite alternate ease-in-out;
+    }
+    .orb-1 {
+      width: 400px; height: 400px;
+      background: rgba(0, 240, 255, 0.15);
+      top: -100px; left: -100px;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: rgba(255, 0, 124, 0.15);
+      bottom: -150px; right: -100px;
+      animation-delay: -5s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(50px) scale(1.1); }
+    }
+
+    /* === TOP NAVIGATION === */
+    .top-nav {
+      padding: 15px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(5, 5, 15, 0.8);
+      border-bottom: 1px solid var(--border-glow);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand-logo {
+      font-weight: 800;
+      font-size: 18px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .home-btn {
+      padding: 8px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      text-decoration: none;
+      border: 1px solid var(--border-glow);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .home-btn:hover {
+      background: var(--accent-cyan);
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    /* === STATUS GRID (1 Line = 3 Items) === */
+    .container {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+    .status-item {
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .status-item:hover {
+      transform: scale(1.05);
+    }
+    .status-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: var(--card-glass);
+      border: 2px solid var(--border-glow);
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .status-box img, .status-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .play-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: rgba(255,255,255,0.8);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .status-name {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-light);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* === FULLSCREEN VIDEO PLAYER MODAL === */
+    .video-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #000;
+      z-index: 999;
+      display: none;
+      flex-direction: column;
+    }
+    .video-modal.active {
+      display: flex;
+    }
+    .modal-nav {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+      position: absolute;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+    .action-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid var(--border-glow);
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+    }
+    .action-btn.download {
+      background: var(--accent-cyan);
+      color: #000;
+      border: none;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    }
+    .video-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    .video-container video {
+      width: 100%;
+      max-height: 100vh;
+      object-fit: contain;
+    }
+
+    /* === LOADING OVERLAY === */
+    .loader-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 1001;
+    }
+    .loader-overlay.active {
+      display: flex;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .loader-text {
+      margin-top: 10px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <!-- Top Navigation -->
+  <div class="top-nav">
+    <span class="brand-logo">WA Downloader Pro</span>
+    <a href="index.html" class="home-btn">🏠 Home</a>
+  </div>
+
+  <!-- Status Grid -->
+  <div class="container">
+    <div class="status-grid" id="statusGrid">
+      <!-- JS will populate statuses here -->
+    </div>
+  </div>
+
+  <!-- Fullscreen Video Player Modal -->
+  <div class="video-modal" id="videoModal">
+    <div class="modal-nav">
+      <button class="action-btn" onclick="closePlayer()">← Back</button>
+      <button class="action-btn download" onclick="downloadVideo()">⬇ HD Download</button>
+    </div>
+    
+    <div class="video-container">
+      <video id="statusVideo" controls autoplay playsinline></video>
+      
+      <!-- Loading Logic UI -->
+      <div class="loader-overlay" id="loaderOverlay">
+        <div class="spinner"></div>
+        <div class="loader-text">Saving in HD...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DUMMY DATA: Android backend jab files fetch karega, toh aisi list HTML ko bhejo
+    const statuses = [
+      { id: 1, name: "Rahul Bhai", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://www.w3schools.com/html/pic_trulli.jpg" },
+      { id: 2, name: "Neha College", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://www.w3schools.com/html/img_girl.jpg" },
+      { id: 3, name: "Aman Dev", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://www.w3schools.com/html/img_chania.jpg" },
+      { id: 4, name: "Priya", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://www.w3schools.com/html/pic_trulli.jpg" },
+    ];
+
+    const statusGrid = document.getElementById('statusGrid');
+    const videoModal = document.getElementById('videoModal');
+    const statusVideo = document.getElementById('statusVideo');
+    const loaderOverlay = document.getElementById('loaderOverlay');
+    let currentVideoSrc = "";
+
+    // 1. Grid Render Logic
+    statuses.forEach(status => {
+      const item = document.createElement('div');
+      item.className = 'status-item';
+      item.onclick = () => openPlayer(status.src);
+      
+      item.innerHTML = `
+        <div class="status-box">
+          <img src="${status.thumb}" alt="${status.name}">
+          <div class="play-icon">▶</div>
+        </div>
+        <div class="status-name">${status.name}</div>
+      `;
+      statusGrid.appendChild(item);
+    });
+
+    // 2. Open Video Player
+    function openPlayer(src) {
+      currentVideoSrc = src;
+      statusVideo.src = src;
+      videoModal.classList.add('active');
+    }
+
+    // 3. Close Video Player
+    function closePlayer() {
+      videoModal.classList.remove('active');
+      statusVideo.pause();
+      statusVideo.src = "";
+    }
+
+    // 4. Download Fast & Loading Logic
+    function downloadVideo() {
+      // Show Loader
+      loaderOverlay.classList.add('active');
+      
+      // Fake delay to show beautiful loader logic (1.5 seconds)
+      setTimeout(() => {
+        // Create an invisible anchor tag for instant local download
+        const a = document.createElement('a');
+        a.href = currentVideoSrc;
+        a.download = `Status_${new Date().getTime()}.mp4`; // Saves as HD .mp4
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Hide Loader & Show Success (Optional alert)
+        loaderOverlay.classList.remove('active');
+      }, 1500);
+    }
+  </script>
+
+</body>
+</html>
