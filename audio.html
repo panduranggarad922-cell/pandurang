@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Video to MP3 Voice Converter Pro</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+    :root {
+      --bg-deep: #05050f;
+      --card-glass: rgba(16, 18, 27, 0.6);
+      --accent-cyan: #00f0ff;
+      --accent-pink: #ff007c;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glow: rgba(0, 240, 255, 0.2);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-deep);
+      color: var(--text-light);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* === ANIMATED BACKGROUND ORBS === */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: -1;
+      animation: floatOrb 10s infinite alternate ease-in-out;
+    }
+    .orb-1 {
+      width: 400px; height: 400px;
+      background: rgba(0, 240, 255, 0.15);
+      top: -100px; left: -100px;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: rgba(255, 0, 124, 0.15);
+      bottom: -150px; right: -100px;
+      animation-delay: -5s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(50px) scale(1.1); }
+    }
+
+    /* === TOP NAVIGATION === */
+    .top-nav {
+      padding: 20px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(5, 5, 15, 0.8);
+      border-bottom: 1px solid var(--border-glow);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-logo {
+      font-weight: 800;
+      font-size: 20px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .back-btn {
+      padding: 8px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      text-decoration: none;
+      border: 1px solid var(--border-glow);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: var(--accent-cyan);
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    /* === MAIN CONTAINER === */
+    .container {
+      max-width: 950px;
+      margin: 40px auto;
+      padding: 0 20px;
+      animation: slideUpFade 1s ease forwards;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    @keyframes slideUpFade {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === CONTENT SECTIONS === */
+    .content-section {
+      background: var(--card-glass);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 35px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(15px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .content-section::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-pink));
+    }
+
+    .content-section h3 {
+      font-size: 22px;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--text-light);
+      font-weight: 800;
+    }
+
+    .content-section p {
+      margin-bottom: 20px;
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+
+    /* === DROPZONE / VIDEO PREVIEW === */
+    .dropzone {
+      border: 2px dashed rgba(0, 240, 255, 0.3);
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .dropzone:hover {
+      border-color: var(--accent-cyan);
+      background: rgba(0, 240, 255, 0.03);
+    }
+
+    .dropzone video {
+      width: 100%;
+      max-height: 220px;
+      border-radius: 8px;
+      object-fit: cover;
+      display: none;
+      outline: none;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    /* === INPUTS & BUTTONS === */
+    .text-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-glow);
+      color: var(--text-light);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      margin-bottom: 15px;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+
+    .btn-primary {
+      display: inline-block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+      color: #05050f;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* === EDITOR & WAVEFORM SECTION === */
+    .editor-container {
+      display: none;
+      margin-top: 25px;
+      border-top: 1px solid var(--border-glow);
+      padding-top: 25px;
+    }
+
+    .waveform-box {
+      width: 100%;
+      height: 140px;
+      background: #030308;
+      border: 1px solid var(--border-glow);
+      border-radius: 8px;
+      position: relative;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    canvas#waveformCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+/* === DUAL RANGE SLIDER STYLING === */
+    .dual-slider-wrapper {
+      position: relative;
+      height: 40px;
+      margin-bottom: 15px;
+    }
+
+    /* White Line Jo Dono Pointers Ke Bich Me Hogi */
+.active-track-line {
+      position: absolute;
+      top: 21.5px; /* Ye line ko exact triangle ke center me layega */
+      height: 3px;
+      background-color: #ffffff;
+      z-index: 1;
+      pointer-events: none;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+
+    .dual-slider-wrapper input[type="range"] {
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 100%;
+      background: none;
+      pointer-events: none;
+      appearance: none;
+      -webkit-appearance: none;
+      z-index: 2;
+    }
+
+    /* Left Pointer (Cyan, Pointing Right ⫸) */
+    .dual-slider-wrapper input[type="range"]::-webkit-slider-thumb {
+      pointer-events: auto;
+      appearance: none;
+      -webkit-appearance: none;
+      width: 22px;
+      height: 26px;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      clip-path: polygon(0% 0%, 100% 50%, 0% 100%); /* Triangle shape */
+      border-radius: 0;
+    }
+
+    /* Right Pointer (Pink, Pointing Left ⫷) */
+    .dual-slider-wrapper input[type="range"]#sliderMax::-webkit-slider-thumb {
+      background: var(--accent-pink);
+      clip-path: polygon(100% 0%, 0% 50%, 100% 100%); /* Reverse Triangle shape */
+    }
+
+    .time-info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--accent-cyan);
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    /* === CIRCULAR LOADER OVERLAY === */
+    .loader-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(5, 5, 15, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .circular-loader {
+      width: 80px; height: 80px;
+      border: 5px solid rgba(255, 255, 255, 0.1);
+      border-top: 5px solid var(--accent-cyan);
+      border-right: 5px solid var(--accent-pink);
+      border-radius: 50%;
+      animation: spin 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+      margin-bottom: 20px;
+    }
+
+    .loader-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-light);
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center;
+      padding: 40px;
+      border-top: 1px solid var(--border-glow);
+      margin-top: 60px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin: 0 10px;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <!-- Circular Loading Overlay -->
+  <div id="loaderOverlay" class="loader-overlay">
+    <div class="circular-loader"></div>
+    <div id="loaderText" class="loader-text">Extracting High-Res Audio Track...</div>
+  </div>
+
+  <!-- Top Navigation -->
+  <div class="top-nav">
+    <span class="brand-logo">AudioExtract Pro</span>
+    <a href="index.html" class="back-btn">Back</a>
+  </div>
+
+  <div class="container">
+    
+    <!-- CONVERTER TOOL SECTION -->
+    <div class="content-section">
+      <h3>Advanced Video to High-Res MP3 Converter</h3>
+      <p></p>
+      
+      <!-- Upload Dropzone with Video Thumbnail / Preview -->
+      <div class="dropzone" id="dropzone">
+        <div id="dropzoneContent">
+          <svg width="48" height="48" fill="none" stroke="var(--accent-cyan)" stroke-width="2" viewBox="0 0 24 24" style="margin: 0 auto; display: block;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p style="font-weight: 600; color: var(--text-light); margin-top: 10px;">Click to import video from gallery</p>
+          <p style="font-size: 13px; color: var(--text-muted);">Supports MP4, MKV, AVI, MOV, WEBM</p>
+        </div>
+        <video id="videoPreviewElement" controls></video>
+        <input type="file" id="videoInput" class="file-input" accept="video/*">
+      </div>
+
+      <div id="fileInfo" style="margin-top: 15px; font-size: 14px; color: var(--accent-cyan); text-align: center; font-weight: 600;"></div>
+
+      <button id="convertBtn" class="btn-primary" disabled>Convert to High-Res MP3</button>
+
+      <!-- AUDIO EDITOR & TRIMMING SECTION -->
+      <div id="editorContainer" class="editor-container">
+        <h3>Precision Voice Editor & Trimmer</h3>
+        <p></p>
+
+        <div class="waveform-box">
+          <canvas id="waveformCanvas"></canvas>
+        </div>
+
+      <!-- Single Dual-Handle Slider -->
+        <div class="dual-slider-wrapper">
+          <div class="active-track-line" id="activeTrackLine"></div>
+          <input type="range" id="sliderMin" min="0" max="100" value="0" step="0.1">
+          <input type="range" id="sliderMax" min="0" max="100" value="100" step="0.1">
+        </div>
+
+        <div class="time-info-row">
+          <span id="startTimeDisplay">Start: 00:00.0</span>
+          <span id="durationDisplay" style="color: var(--text-light);">Selected Length: 00:00.0</span>
+          <span id="endTimeDisplay">End: 00:00.0</span>
+        </div>
+
+        <audio id="audioPreview" controls style="width: 100%; margin-bottom: 20px; border-radius: 8px;"></audio>
+
+        <!-- Rename Input Section -->
+        <label for="fileNameInput" style="font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 6px;">Rename Output File:</label>
+        <input type="text" id="fileNameInput" class="text-input" placeholder="Enter custom audio name...">
+
+        <button id="downloadBtn" class="btn-primary">Download Trimmed MP3</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2026 AudioExtract Pro | Built with Advanced Web Audio Tech.</p>
+    <div style="margin-top: 10px;">
+      <a href="#">Home</a> |
+      <a href="#">Tools</a> |
+      <a href="#">Support Desk</a> |
+      <a href="#">Privacy Policy</a> |
+      <a href="#">Terms of Service</a>
+    </div>
+  </footer>
+
+  <script>
+    const activeTrackLine = document.getElementById('activeTrackLine'); // Ye add karein
+    const videoInput = document.getElementById('videoInput');
+    const dropzone = document.getElementById('dropzone');
+    const dropzoneContent = document.getElementById('dropzoneContent');
+    const videoPreviewElement = document.getElementById('videoPreviewElement');
+    const fileInfo = document.getElementById('fileInfo');
+    const convertBtn = document.getElementById('convertBtn');
+    const loaderOverlay = document.getElementById('loaderOverlay');
+    const loaderText = document.getElementById('loaderText');
+    const editorContainer = document.getElementById('editorContainer');
+    
+    const sliderMin = document.getElementById('sliderMin');
+    const sliderMax = document.getElementById('sliderMax');
+    const startTimeDisplay = document.getElementById('startTimeDisplay');
+    const endTimeDisplay = document.getElementById('endTimeDisplay');
+    const durationDisplay = document.getElementById('durationDisplay');
+    const audioPreview = document.getElementById('audioPreview');
+    const fileNameInput = document.getElementById('fileNameInput');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const waveformCanvas = document.getElementById('waveformCanvas');
+    const canvasCtx = waveformCanvas.getContext('2d');
+
+    let selectedFile = null;
+    let audioContext = null;
+    let audioBuffer = null;
+    let rawAudioData = null;
+    let trimmedBlobUrl = null;
+    let totalDuration = 0;
+
+    // Handle Dropzone Click
+    dropzone.addEventListener('click', (e) => {
+      if (e.target !== videoPreviewElement && !videoPreviewElement.contains(e.target)) {
+        videoInput.click();
+      }
+    });
+
+    // Handle File Selection & Video Thumbnail Display
+    videoInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        selectedFile = e.target.files[0];
+        fileInfo.textContent = `Selected Video: ${selectedFile.name} (${(selectedFile.size / (1024*1024)).toFixed(2)} MB)`;
+        
+        // Show video thumbnail/preview inside dropzone box
+        const videoObjectUrl = URL.createObjectURL(selectedFile);
+        dropzoneContent.style.display = 'none';
+        videoPreviewElement.style.display = 'block';
+        videoPreviewElement.src = videoObjectUrl;
+        
+        // Set default name in rename box
+        const baseName = selectedFile.name.replace(/\.[^/.]+$/, "");
+        fileNameInput.value = baseName + "_voice";
+
+        convertBtn.disabled = false;
+      }
+    });
+
+    // Convert Trigger
+    convertBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+
+      loaderOverlay.style.display = 'flex';
+      loaderText.textContent = 'Reading Video & Decoding Audio Track...';
+
+      try {
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        loaderText.textContent = 'High-Speed Audio Extraction in Progress...';
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        totalDuration = audioBuffer.duration;
+        rawAudioData = audioBuffer.getChannelData(0);
+
+        // Setup Dual Sliders
+        sliderMin.max = totalDuration;
+        sliderMax.max = totalDuration;
+        sliderMin.value = 0;
+        sliderMax.value = totalDuration;
+
+        redrawWaveform();
+        updateTrimming();
+
+        loaderOverlay.style.display = 'none';
+        editorContainer.style.display = 'block';
+        editorContainer.scrollIntoView({ behavior: 'smooth' });
+
+      } catch (err) {
+        loaderOverlay.style.display = 'none';
+        alert('Error extracting audio from video file. Please ensure it is a valid video format.');
+        console.error(err);
+      }
+    });
+
+    // Draw Waveform visualization with active/cut shading regions
+    function redrawWaveform() {
+      if (!audioBuffer) return;
+
+      waveformCanvas.width = waveformCanvas.parentElement.clientWidth;
+      waveformCanvas.height = waveformCanvas.parentElement.clientHeight;
+      
+      const width = waveformCanvas.width;
+      const height = waveformCanvas.height;
+      const step = Math.ceil(rawAudioData.length / width);
+      const amp = height / 2;
+
+      canvasCtx.clearRect(0, 0, width, height);
+      canvasCtx.fillStyle = '#030308';
+      canvasCtx.fillRect(0, 0, width, height);
+
+      const startSec = parseFloat(sliderMin.value);
+      const endSec = parseFloat(sliderMax.value);
+      const startX = (startSec / totalDuration) * width;
+      const endX = (endSec / totalDuration) * width;
+
+      for (let i = 0; i < width; i++) {
+        let min = 1.0;
+        let max = -1.0;
+        for (let j = 0; j < step; j++) {
+          const datum = rawAudioData[(i * step) + j];
+          if (datum < min) min = datum;
+          if (datum > max) max = datum;
+        }
+
+        // Color active selected part vs cut parts differently
+        if (i >= startX && i <= endX) {
+          canvasCtx.strokeStyle = '#00f0ff'; // Active neon cyan
+        } else {
+          canvasCtx.strokeStyle = 'rgba(148, 163, 184, 0.2)'; // Cut/dimmed part
+        }
+
+        canvasCtx.lineWidth = 2;
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(i, (1 + min) * amp);
+        canvasCtx.lineTo(i, (1 + max) * amp);
+        canvasCtx.stroke();
+      }
+    }
+
+    // Format seconds to mm:ss.s
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = (seconds % 60).toFixed(1);
+      return `${mins.toString().padStart(2, '0')}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function updateTrimming() {
+      let minVal = parseFloat(sliderMin.value);
+      let maxVal = parseFloat(sliderMax.value);
+
+      // Prevent sliders from crossing each other
+      if (minVal >= maxVal) {
+        sliderMin.value = maxVal - 0.2;
+        minVal = parseFloat(sliderMin.value);
+      }
+
+      // 🔴 NAYA CODE (Replace this part)
+      const pMin = minVal / totalDuration;
+      const pMax = maxVal / totalDuration;
+      
+      // Triangle ke tips ke bich line ko exact set karne ka perfect calculation
+      activeTrackLine.style.left = `calc(${pMin * 100}% - ${pMin * 22}px + 22px)`;
+      const pDiff = pMax - pMin;
+      activeTrackLine.style.width = `calc(${pDiff * 100}% - ${pDiff * 22}px - 22px)`;
+      // 🔴 NAYA CODE KHATAM
+
+      startTimeDisplay.textContent = `Start: ${formatTime(minVal)}`;
+      endTimeDisplay.textContent = `End: ${formatTime(maxVal)}`;
+      durationDisplay.textContent = `Selected Length: ${formatTime(maxVal - minVal)}`;
+
+      redrawWaveform();
+      generateTrimmedAudioBlob();
+    }
+
+    sliderMin.addEventListener('input', updateTrimming);
+    sliderMax.addEventListener('input', updateTrimming);
+
+    // Generate Trimmed Audio Blob
+    function generateTrimmedAudioBlob() {
+      if (!audioBuffer) return;
+
+      const startSec = parseFloat(sliderMin.value);
+      const endSec = parseFloat(sliderMax.value);
+      
+      const sampleRate = audioBuffer.sampleRate;
+      const startSample = Math.floor(startSec * sampleRate);
+      const endSample = Math.floor(endSec * sampleRate);
+      const frameCount = endSample - startSample;
+
+      if (frameCount <= 0) return;
+
+      const trimmedBuffer = audioContext.createBuffer(
+        audioBuffer.numberOfChannels,
+        frameCount,
+        sampleRate
+      );
+
+      for (let i = 0; i < audioBuffer.numberOfChannels; i++) {
+        const channelData = audioBuffer.getChannelData(i);
+        const trimmedData = trimmedBuffer.getChannelData(i);
+        trimmedData.set(channelData.subarray(startSample, endSample));
+      }
+
+      const wavBytes = bufferToWave(trimmedBuffer, frameCount);
+      const blob = new Blob([wavBytes], { type: 'audio/mp3' });
+      
+      if (trimmedBlobUrl) URL.revokeObjectURL(trimmedBlobUrl);
+      trimmedBlobUrl = URL.createObjectURL(blob);
+      audioPreview.src = trimmedBlobUrl;
+    }
+
+    // Helper: Convert AudioBuffer to WAV format bytes
+    function bufferToWave(abuffer, len) {
+      const numOfChan = abuffer.numberOfChannels;
+      const length = len * numOfChan * 2 + 44;
+      const buffer = new ArrayBuffer(length);
+      const view = new DataView(buffer);
+      let sample, offset = 0, pos = 0;
+
+      function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
+      function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+
+      setUint32(0x46464952);                         // "RIFF"
+      setUint32(length - 8);                         // file length - 8
+      setUint32(0x45564157);                         // "WAVE"
+      setUint32(0x20746d66);                         // "fmt " chunk
+      setUint32(16);                                 // length = 16
+      setUint16(1);                                  // PCM
+      setUint16(numOfChan);
+      setUint32(abuffer.sampleRate);
+      setUint32(abuffer.sampleRate * 2 * numOfChan);
+      setUint16(numOfChan * 2);
+      setUint16(16);
+      setUint32(0x61746164);                         // "data"
+      setUint32(length - pos - 4);
+
+      for (let i = 0; i < abuffer.numberOfChannels; i++) {
+        channelsData = abuffer.getChannelData(i);
+      }
+
+      const channels = [];
+      for (let i = 0; i < abuffer.numberOfChannels; i++) {
+        channels.push(abuffer.getChannelData(i));
+      }
+
+      while (offset < len) {
+        for (let i = 0; i < numOfChan; i++) {
+          let sampleVal = Math.max(-1, Math.min(1, channels[i][offset]));
+          sampleVal = (0.5 + sampleVal < 0 ? sampleVal * 32768 : sampleVal * 32767) | 0;
+          view.setInt16(pos, sampleVal, true);
+          pos += 2;
+        }
+        offset++;
+      }
+      return buffer;
+    }
+
+    // Download Handler with Custom Renaming
+    downloadBtn.addEventListener('click', () => {
+      if (!trimmedBlobUrl) return;
+      const customName = fileNameInput.value.trim() || "extracted_voice";
+      const a = document.createElement('a');
+      a.href = trimmedBlobUrl;
+      a.download = customName.endsWith('.mp3') ? customName : customName + ".mp3";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  </script>
+
+</body>
+</html>
