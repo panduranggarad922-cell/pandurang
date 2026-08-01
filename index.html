@@ -14,6 +14,8 @@
       --card-glass: rgba(16, 18, 27, 0.6);
       --accent-cyan: #00f0ff;
       --accent-pink: #ff007c;
+      --accent-purple: #9d00ff;
+      --accent-green: #00ff88;
       --text-light: #f8fafc;
       --text-muted: #94a3b8;
       --border-glow: rgba(0, 240, 255, 0.25);
@@ -58,9 +60,9 @@
 
     /* === TOP NAVIGATION === */
     .top-nav {
-      padding: 20px 5%;
+      padding: 15px 5%;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       background: rgba(5, 5, 15, 0.8);
       border-bottom: 1px solid var(--border-glow);
@@ -72,7 +74,7 @@
 
     .brand-logo {
       font-weight: 800;
-      font-size: 22px;
+      font-size: 20px;
       background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -86,11 +88,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
       text-align: center;
       animation: slideUpFade 1s ease forwards;
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(20px);
+      width: 90%;
+      margin: 0 auto;
+      padding: 10px 0;
     }
 
     @keyframes slideUpFade {
@@ -98,9 +102,9 @@
     }
 
     .main-heading {
-      font-size: 48px;
+      font-size: 24px;
       font-weight: 800;
-      margin-bottom: 15px;
+      margin-bottom: 8px;
       background: linear-gradient(90deg, #ffffff, var(--accent-cyan));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -108,122 +112,222 @@
     }
 
     .sub-heading {
-      font-size: 18px;
+      font-size: 13px;
       color: var(--text-muted);
-      margin-bottom: 50px;
+      margin-bottom: 25px;
       max-width: 600px;
       font-weight: 400;
     }
 
-    /* === BUTTON CARDS === */
+    /* === BUTTON CARDS (MOBILE OPTIMIZED - 2x2 GRID) === */
     .btn-group {
-      display: flex;
-      gap: 30px;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      width: 100%;
     }
 
     .tool-card {
       background: var(--card-glass);
       border: 1px solid var(--border-glow);
-      border-radius: 24px;
-      padding: 40px 30px;
-      width: 280px;
+      border-radius: 18px;
+      padding: 20px 10px;
       text-decoration: none;
       color: var(--text-light);
       backdrop-filter: blur(15px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      justify-content: center;
+      text-align: center;
       position: relative;
       overflow: hidden;
+      aspect-ratio: 1 / 1;
+      cursor: pointer;
     }
 
     .tool-card::before {
       content: "";
       position: absolute;
       top: 0; left: 0; width: 100%; height: 4px;
+      transition: height 0.3s ease;
     }
 
+    /* Colored Top Borders */
     .card-img::before { background: linear-gradient(90deg, var(--accent-pink), #ff758c); }
     .card-vid::before { background: linear-gradient(90deg, var(--accent-cyan), #0096ff); }
+    .card-aud::before { background: linear-gradient(90deg, var(--accent-purple), #d400ff); }
+    .card-wa::before { background: linear-gradient(90deg, var(--accent-green), #00e676); }
 
-    .tool-card:hover {
-      transform: translateY(-10px) scale(1.02);
-    }
-
+    /* === SHINY GLOW HOVER & ACTIVE LOGIC === */
     .card-img:hover {
       border-color: var(--accent-pink);
-      box-shadow: 0 20px 50px rgba(255, 0, 124, 0.2);
+      box-shadow: 0 0 30px rgba(255, 0, 124, 0.4);
+      transform: translateY(-5px);
     }
-    .card-img:hover .tool-icon { color: var(--accent-pink); }
-
     .card-vid:hover {
       border-color: var(--accent-cyan);
-      box-shadow: 0 20px 50px rgba(0, 240, 255, 0.2);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+      transform: translateY(-5px);
     }
-    .card-vid:hover .tool-icon { color: var(--accent-cyan); }
+    .card-aud:hover {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 30px rgba(157, 0, 255, 0.4);
+      transform: translateY(-5px);
+    }
+    .card-wa:hover {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+      transform: translateY(-5px);
+    }
+
+    /* For Mobile Touch (Active Class added via JS for 0.5s) */
+    .tool-card.glow-active {
+      transform: scale(0.95);
+    }
+    
+    .card-img.glow-active {
+      background: rgba(255, 0, 124, 0.15);
+      border-color: var(--accent-pink);
+      box-shadow: 0 0 40px rgba(255, 0, 124, 0.8), inset 0 0 20px rgba(255, 0, 124, 0.5);
+    }
+    
+    .card-vid.glow-active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.8), inset 0 0 20px rgba(0, 240, 255, 0.5);
+    }
+
+    .card-aud.glow-active {
+      background: rgba(157, 0, 255, 0.15);
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 40px rgba(157, 0, 255, 0.8), inset 0 0 20px rgba(157, 0, 255, 0.5);
+    }
+
+    .card-wa.glow-active {
+      background: rgba(0, 255, 136, 0.15);
+      border-color: var(--accent-green);
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.8), inset 0 0 20px rgba(0, 255, 136, 0.5);
+    }
+
+    /* Add a subtle shine overlay that flashes */
+    .tool-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 50%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+      transform: skewX(-25deg);
+      transition: none;
+    }
+
+    .tool-card.glow-active::after {
+      animation: shineFlash 0.5s ease-out forwards;
+    }
+
+    @keyframes shineFlash {
+      0% { left: -100%; }
+      100% { left: 200%; }
+    }
 
     .tool-icon {
-      font-size: 55px;
-      margin-bottom: 10px;
+      font-size: 32px;
+      margin-bottom: 12px;
       color: var(--text-light);
       transition: color 0.3s ease;
     }
 
+    .card-img:hover .tool-icon, .card-img.glow-active .tool-icon { color: var(--accent-pink); }
+    .card-vid:hover .tool-icon, .card-vid.glow-active .tool-icon { color: var(--accent-cyan); }
+    .card-aud:hover .tool-icon, .card-aud.glow-active .tool-icon { color: var(--accent-purple); }
+    .card-wa:hover .tool-icon, .card-wa.glow-active .tool-icon { color: var(--accent-green); }
+
     .tool-card h3 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 800;
+      margin: 0 0 5px 0;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
     }
 
     .tool-card p {
       margin: 0;
-      font-size: 14px;
+      font-size: 11px;
       color: var(--text-muted);
+      line-height: 1.3;
     }
 
-    .launch-btn {
+    /* === COLORFUL LOADING OVERLAY === */
+    .loader-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6); /* Transparent enough to see the glowing button */
+      backdrop-filter: blur(2px);
+      z-index: 1000;
+      display: none; /* Hidden by default */
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .loader-overlay.active {
+      display: flex;
+    }
+
+    .colorful-spinner {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      /* Premium 4-color animated gradient ring */
+      background: conic-gradient(var(--accent-pink), var(--accent-cyan), var(--accent-green), var(--accent-purple), var(--accent-pink));
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #fff 0);
+      mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #fff 0);
+      animation: spinRing 0.8s linear infinite;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+    }
+
+    .loader-text {
       margin-top: 15px;
-      padding: 10px 24px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text-light);
-      transition: all 0.3s;
+      letter-spacing: 1px;
+      animation: pulse 1s infinite alternate;
     }
 
-    .card-img:hover .launch-btn { background: var(--accent-pink); color: #fff; border-color: var(--accent-pink); }
-    .card-vid:hover .launch-btn { background: var(--accent-cyan); color: #000; border-color: var(--accent-cyan); }
+    @keyframes spinRing {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
 
     /* === FOOTER === */
     footer {
       text-align: center;
-      padding: 30px;
+      padding: 15px;
       border-top: 1px solid var(--border-glow);
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 12px;
       background: rgba(5, 5, 15, 0.8);
       backdrop-filter: blur(20px);
+      margin-top: auto;
     }
 
     footer a {
       color: var(--text-muted);
       text-decoration: none;
-      margin: 0 10px;
-      transition: color 0.3s ease;
+      margin: 0 8px;
     }
-    footer a:hover { color: var(--accent-cyan); }
 
-    @media (max-width: 768px) {
-      .main-heading { font-size: 36px; }
-      .btn-group { flex-direction: column; align-items: center; }
-      .tool-card { width: 100%; max-width: 320px; }
+    @media (max-width: 350px) {
+      .btn-group { gap: 10px; }
+      .tool-card h3 { font-size: 13px; }
+      .tool-icon { font-size: 28px; }
     }
   </style>
 </head>
@@ -240,36 +344,74 @@
 
   <!-- Main Content -->
   <div class="hero-container">
-    <h1 class="main-heading">Professional Image & Video Editor</h1>
-    <p class="sub-heading">Unleash your creativity with our advanced suite of editing tools. Choose your workspace below to get started.</p>
+    <h1 class="main-heading">Creative Suite</h1>
+    <p class="sub-heading">Select a tool below to get started.</p>
     
     <div class="btn-group">
-      <!-- Image Editor Button -->
-      <a href="img.html" class="tool-card card-img">
+      <!-- 1. Image Editor Button -->
+      <a href="img.html" class="tool-card card-img" onclick="handleNav(event, 'img.html')">
         <i class="fa-solid fa-image tool-icon"></i>
         <h3>Image Editor</h3>
-        <p>Advanced filters, text layers, PIP, and color grading tools for photos.</p>
-        <div class="launch-btn">Launch Editor <i class="fa-solid fa-arrow-right"></i></div>
+        <p>Advanced filters</p>
       </a>
 
-      <!-- Video Editor Button -->
-      <a href="vid.html" class="tool-card card-vid">
+      <!-- 2. Video Editor Button -->
+      <a href="vid.html" class="tool-card card-vid" onclick="handleNav(event, 'vid.html')">
         <i class="fa-solid fa-film tool-icon"></i>
         <h3>Video Editor</h3>
-        <p>Live particles, multi-track timeline, audio mixing, and HD export.</p>
-        <div class="launch-btn">Launch Editor <i class="fa-solid fa-arrow-right"></i></div>
+        <p>Timeline & effects</p>
+      </a>
+      
+      <!-- 3. Video to MP3 Button -->
+      <a href="audio.html" class="tool-card card-aud" onclick="handleNav(event, 'audio.html')">
+        <i class="fa-solid fa-music tool-icon"></i>
+        <h3>Video to MP3</h3>
+        <p>Extract audio</p>
+      </a>
+      
+      <!-- 4. WA Status Downloader Button -->
+      <a href="wa.html" class="tool-card card-wa" onclick="handleNav(event, 'wa.html')">
+        <i class="fa-brands fa-whatsapp tool-icon"></i>
+        <h3>WA Status</h3>
+        <p>Save in HD</p>
       </a>
     </div>
   </div>
 
+  <!-- Colorful Loading Overlay (Hidden by Default) -->
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="colorful-spinner"></div>
+    <div class="loader-text">Loading...</div>
+  </div>
+
   <!-- Footer -->
   <footer>
-    <p>&copy; 2026 ProEditor Studio. All rights reserved.</p>
-    <div style="margin-top: 10px;">
-      <a href="#">Terms of Service</a> |
-      <a href="privacy.html">Privacy Policy</a>
+    <p>&copy; 2026 ProEditor Studio.</p>
+    <div style="margin-top: 5px;">
+      <a href="#">Terms</a> |
+      <a href="privacy.html">Privacy</a>
     </div>
   </footer>
+
+  <script>
+    function handleNav(event, url) {
+      // Direct navigation ko roko
+      event.preventDefault();
+      
+      // Button par glow effect lagao
+      const card = event.currentTarget;
+      card.classList.add('glow-active');
+      
+      // Full screen colorful loader chalu karo
+      const loader = document.getElementById('loaderOverlay');
+      loader.classList.add('active');
+      
+      // Exactly 0.5 seconds (500ms) baad next file open karo
+      setTimeout(() => {
+        window.location.href = url;
+      }, 500);
+    }
+  </script>
 
 </body>
 </html>
