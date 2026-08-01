@@ -87,7 +87,7 @@
       box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
     }
 
-    /* === STATUS GRID (1 Line = 3 Items) === */
+    /* === STATUS GRID === */
     .container {
       padding: 20px;
       max-width: 600px;
@@ -138,6 +138,12 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .no-status {
+      grid-column: span 3;
+      text-align: center;
+      color: var(--text-muted);
+      padding: 40px 0;
     }
 
     /* === FULLSCREEN VIDEO PLAYER MODAL === */
@@ -225,24 +231,20 @@
 </head>
 <body>
 
-  <!-- Background Orbs -->
   <div class="bg-orb orb-1"></div>
   <div class="bg-orb orb-2"></div>
 
-  <!-- Top Navigation -->
   <div class="top-nav">
     <span class="brand-logo">WA Downloader Pro</span>
     <a href="index.html" class="home-btn">🏠 Home</a>
   </div>
 
-  <!-- Status Grid -->
   <div class="container">
     <div class="status-grid" id="statusGrid">
-      <!-- JS will populate statuses here -->
+      <div class="no-status">Waiting for real statuses from phone storage...</div>
     </div>
   </div>
 
-  <!-- Fullscreen Video Player Modal -->
   <div class="video-modal" id="videoModal">
     <div class="modal-nav">
       <button class="action-btn" onclick="closePlayer()">← Back</button>
@@ -251,8 +253,6 @@
     
     <div class="video-container">
       <video id="statusVideo" controls autoplay playsinline></video>
-      
-      <!-- Loading Logic UI -->
       <div class="loader-overlay" id="loaderOverlay">
         <div class="spinner"></div>
         <div class="loader-text">Saving in HD...</div>
@@ -261,66 +261,61 @@
   </div>
 
   <script>
-    // DUMMY DATA: Android backend jab files fetch karega, toh aisi list HTML ko bhejo
-    const statuses = [
-      { id: 1, name: "Rahul Bhai", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://www.w3schools.com/html/pic_trulli.jpg" },
-      { id: 2, name: "Neha College", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://www.w3schools.com/html/img_girl.jpg" },
-      { id: 3, name: "Aman Dev", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://www.w3schools.com/html/img_chania.jpg" },
-      { id: 4, name: "Priya", src: "https://www.w3schools.com/html/mov_bbb.mp4", thumb: "https://www.w3schools.com/html/pic_trulli.jpg" },
-    ];
-
     const statusGrid = document.getElementById('statusGrid');
     const videoModal = document.getElementById('videoModal');
     const statusVideo = document.getElementById('statusVideo');
     const loaderOverlay = document.getElementById('loaderOverlay');
     let currentVideoSrc = "";
 
-    // 1. Grid Render Logic
-    statuses.forEach(status => {
-      const item = document.createElement('div');
-      item.className = 'status-item';
-      item.onclick = () => openPlayer(status.src);
+    // DYNAMIC LOGIC: Ye function apka Android/App backend call karega real files bhejte waqt.
+    function loadRealStatuses(realDataArray) {
+      statusGrid.innerHTML = ""; // Clear waiting message
       
-      item.innerHTML = `
-        <div class="status-box">
-          <img src="${status.thumb}" alt="${status.name}">
-          <div class="play-icon">▶</div>
-        </div>
-        <div class="status-name">${status.name}</div>
-      `;
-      statusGrid.appendChild(item);
-    });
+      if(realDataArray.length === 0) {
+        statusGrid.innerHTML = `<div class="no-status">No Status Found</div>`;
+        return;
+      }
 
-    // 2. Open Video Player
+      realDataArray.forEach(status => {
+        const item = document.createElement('div');
+        item.className = 'status-item';
+        item.onclick = () => openPlayer(status.src);
+        
+        item.innerHTML = `
+          <div class="status-box">
+            <video src="${status.src}" muted></video> 
+            <div class="play-icon">▶</div>
+          </div>
+          <div class="status-name">${status.name}</div>
+        `;
+        statusGrid.appendChild(item);
+      });
+    }
+
     function openPlayer(src) {
       currentVideoSrc = src;
       statusVideo.src = src;
       videoModal.classList.add('active');
     }
 
-    // 3. Close Video Player
     function closePlayer() {
       videoModal.classList.remove('active');
       statusVideo.pause();
       statusVideo.src = "";
     }
 
-    // 4. Download Fast & Loading Logic
     function downloadVideo() {
-      // Show Loader
       loaderOverlay.classList.add('active');
       
-      // Fake delay to show beautiful loader logic (1.5 seconds)
       setTimeout(() => {
-        // Create an invisible anchor tag for instant local download
+        // Android backend can intercept this link click to save natively
         const a = document.createElement('a');
         a.href = currentVideoSrc;
-        a.download = `Status_${new Date().getTime()}.mp4`; // Saves as HD .mp4
+        a.download = `Status_${new Date().getTime()}.mp4`; 
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         
-        // Hide Loader & Show Success (Optional alert)
         loaderOverlay.classList.remove('active');
       }, 1500);
     }
