@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProEditor Studio | Home</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-deep: #05050f;
+      --card-glass: rgba(16, 18, 27, 0.6);
+      --accent-cyan: #00f0ff;
+      --accent-pink: #ff007c;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glow: rgba(0, 240, 255, 0.25);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-deep);
+      color: var(--text-light);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* === ANIMATED BACKGROUND ORBS === */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      z-index: -1;
+      animation: floatOrb 10s infinite alternate ease-in-out;
+    }
+    .orb-1 {
+      width: 400px; height: 400px;
+      background: rgba(0, 240, 255, 0.15);
+      top: -100px; left: -100px;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: rgba(255, 0, 124, 0.15);
+      bottom: -150px; right: -100px;
+      animation-delay: -5s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(50px) scale(1.1); }
+    }
+
+    /* === TOP NAVIGATION === */
+    .top-nav {
+      padding: 20px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(5, 5, 15, 0.8);
+      border-bottom: 1px solid var(--border-glow);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-logo {
+      font-weight: 800;
+      font-size: 22px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    /* === MAIN HERO CONTAINER === */
+    .hero-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+      animation: slideUpFade 1s ease forwards;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    @keyframes slideUpFade {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .main-heading {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      background: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    .sub-heading {
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-bottom: 50px;
+      max-width: 600px;
+      font-weight: 400;
+    }
+
+    /* === BUTTON CARDS === */
+    .btn-group {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .tool-card {
+      background: var(--card-glass);
+      border: 1px solid var(--border-glow);
+      border-radius: 24px;
+      padding: 40px 30px;
+      width: 280px;
+      text-decoration: none;
+      color: var(--text-light);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 4px;
+    }
+
+    .card-img::before { background: linear-gradient(90deg, var(--accent-pink), #ff758c); }
+    .card-vid::before { background: linear-gradient(90deg, var(--accent-cyan), #0096ff); }
+
+    .tool-card:hover {
+      transform: translateY(-10px) scale(1.02);
+    }
+
+    .card-img:hover {
+      border-color: var(--accent-pink);
+      box-shadow: 0 20px 50px rgba(255, 0, 124, 0.2);
+    }
+    .card-img:hover .tool-icon { color: var(--accent-pink); }
+
+    .card-vid:hover {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 20px 50px rgba(0, 240, 255, 0.2);
+    }
+    .card-vid:hover .tool-icon { color: var(--accent-cyan); }
+
+    .tool-icon {
+      font-size: 55px;
+      margin-bottom: 10px;
+      color: var(--text-light);
+      transition: color 0.3s ease;
+    }
+
+    .tool-card h3 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .tool-card p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .launch-btn {
+      margin-top: 15px;
+      padding: 10px 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+      transition: all 0.3s;
+    }
+
+    .card-img:hover .launch-btn { background: var(--accent-pink); color: #fff; border-color: var(--accent-pink); }
+    .card-vid:hover .launch-btn { background: var(--accent-cyan); color: #000; border-color: var(--accent-cyan); }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center;
+      padding: 30px;
+      border-top: 1px solid var(--border-glow);
+      color: var(--text-muted);
+      font-size: 14px;
+      background: rgba(5, 5, 15, 0.8);
+      backdrop-filter: blur(20px);
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin: 0 10px;
+      transition: color 0.3s ease;
+    }
+    footer a:hover { color: var(--accent-cyan); }
+
+    @media (max-width: 768px) {
+      .main-heading { font-size: 36px; }
+      .btn-group { flex-direction: column; align-items: center; }
+      .tool-card { width: 100%; max-width: 320px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Animated Orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <!-- Top Navigation -->
+  <div class="top-nav">
+    <span class="brand-logo">ProEditor Studio</span>
+  </div>
+
+  <!-- Main Content -->
+  <div class="hero-container">
+    <h1 class="main-heading">Professional Image & Video Editor</h1>
+    <p class="sub-heading">Unleash your creativity with our advanced suite of editing tools. Choose your workspace below to get started.</p>
+    
+    <div class="btn-group">
+      <!-- Image Editor Button -->
+      <a href="img.html" class="tool-card card-img">
+        <i class="fa-solid fa-image tool-icon"></i>
+        <h3>Image Editor</h3>
+        <p>Advanced filters, text layers, PIP, and color grading tools for photos.</p>
+        <div class="launch-btn">Launch Editor <i class="fa-solid fa-arrow-right"></i></div>
+      </a>
+
+      <!-- Video Editor Button -->
+      <a href="vid.html" class="tool-card card-vid">
+        <i class="fa-solid fa-film tool-icon"></i>
+        <h3>Video Editor</h3>
+        <p>Live particles, multi-track timeline, audio mixing, and HD export.</p>
+        <div class="launch-btn">Launch Editor <i class="fa-solid fa-arrow-right"></i></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 ProEditor Studio. All rights reserved.</p>
+    <div style="margin-top: 10px;">
+      <a href="#">Terms of Service</a> |
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+  </footer>
+
+</body>
+</html>
