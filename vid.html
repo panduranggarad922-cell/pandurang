@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pro Advance Video Editor</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- All User Requested Fonts Added -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Roboto&family=Lato&family=Montserrat&family=Oswald&family=Raleway&family=Poppins&family=Nunito&family=Ubuntu&family=Playfair+Display&family=Merriweather&family=Pacifico&family=Dancing+Script&family=Caveat&family=Anton&family=Lobster&family=Bebas+Neue&family=Fjalla+One&family=Teko&family=Righteous&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-deep: #05050f;
+      --card-glass: rgba(16, 18, 27, 0.7);
+      --accent-cyan: #00f0ff;
+      --accent-pink: #ff007c;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glow: rgba(0, 240, 255, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0; font-family: 'Inter', sans-serif;
+      background-color: var(--bg-deep); color: var(--text-light);
+      overflow: hidden; height: 100vh; display: flex; flex-direction: column;
+      user-select: none;
+    }
+
+    /* === ANIMATED BACKGROUND ORBS === */
+    .bg-orb { position: fixed; border-radius: 50%; filter: blur(90px); z-index: -1; animation: floatOrb 10s infinite alternate ease-in-out; pointer-events: none; }
+    .orb-1 { width: 380px; height: 380px; background: rgba(0, 240, 255, 0.18); top: -80px; left: -80px; }
+    .orb-2 { width: 450px; height: 450px; background: rgba(255, 0, 124, 0.18); bottom: -100px; right: -80px; animation-delay: -5s; }
+    @keyframes floatOrb { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(40px) scale(1.08); } }
+
+    /* === TOP NAVBAR === */
+    .top-nav {
+      height: 60px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(5, 5, 15, 0.85); border-bottom: 1px solid var(--border-glow); backdrop-filter: blur(20px); z-index: 1000;
+    }
+    .brand-logo { font-weight: 800; font-size: 20px; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .nav-buttons-group { display: flex; gap: 10px; }
+    
+    .action-top-btn {
+      padding: 10px 20px; background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(255, 0, 124, 0.2));
+      color: var(--text-light); border: 1px solid var(--border-glow); border-radius: 25px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s;
+    }
+    .action-top-btn:hover { border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+    .action-top-btn.save-mode { background: linear-gradient(90deg, var(--accent-cyan), #0096ff); color: #000; border: none; }
+    .action-top-btn.add-btn { background: rgba(255, 255, 255, 0.1); border-color: rgba(255,255,255,0.3); }
+
+    /* === WORKSPACE AREA === */
+    .workspace-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; overflow: hidden; }
+    
+    /* Perfect Fit Canvas Container */
+    .canvas-container { 
+      position: relative; 
+      width: 100%; height: 100%; 
+      display: none; justify-content: center; align-items: center;
+      transition: all 0.3s ease; 
+    }
+    
+    #videoHuggingWrapper {
+      position: relative; display: inline-block; 
+      max-width: 100%; max-height: calc(100vh - 300px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); border-radius: 12px;
+    }
+
+    #mainVideo { max-width: 100%; max-height: calc(100vh - 300px); display: block; border-radius: 12px; }
+    
+    .play-btn-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 50px; color: rgba(255,255,255,0.7); cursor: pointer; display: none; z-index: 10; }
+
+    /* Overlay Layer Effects */
+    .video-overlay-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: hidden; border-radius: 12px; }
+    .fx-crt { background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 6px 100%; }
+    .fx-vhs { animation: vhs-flicker 0.15s infinite; background: rgba(0,0,0,0.05); box-shadow: inset 0 0 40px rgba(0,0,0,0.5); }
+    .fx-vignette-dark { box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
+    .fx-vignette-light { box-shadow: inset 0 0 100px rgba(255,255,255,0.4); }
+    @keyframes vhs-flicker { 0% { opacity: 0.98; } 50% { opacity: 1; } 100% { opacity: 0.99; } }
+
+    /* LIVE PARTICLE EFFECTS CSS */
+    .particle { position: absolute; pointer-events: none; z-index: 6; }
+    .particle.snow { background: #fff; border-radius: 50%; opacity: 0.8; animation: fall linear forwards; top: -20px; }
+    .particle.rain { background: rgba(255,255,255,0.7); width: 2px; height: 25px; animation: rainfall linear forwards; top: -30px; }
+    .particle.hearts, .particle.fire, .particle.dots { animation: floatup linear forwards; position: absolute; }
+    .particle.dots { border-radius: 50%; opacity: 0.7; box-shadow: 0 0 10px currentColor; }
+    
+    @keyframes fall { to { transform: translateY(100vh); } }
+    @keyframes rainfall { to { transform: translateY(100vh) rotate(10deg); } }
+    @keyframes floatup { 
+       0% { transform: translateY(0) scale(1); opacity: 1; }
+       100% { transform: translateY(-100vh) scale(0.5); opacity: 0; } 
+    }
+
+    /* === DYNAMIC OVERLAY LAYERS === */
+    .movable-layer { position: absolute; cursor: move; border: 1.5px solid transparent; padding: 6px; user-select: none; z-index: 1000; transform-origin: center center; touch-action: none; display: inline-block; }
+    .movable-layer.selected { border-color: #ffffff; box-shadow: 0 0 8px rgba(0,0,0,0.5); }
+    .layer-handle { position: absolute; width: 26px; height: 26px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 12px; z-index: 1001; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+    .movable-layer.selected .layer-handle { display: flex; }
+    .handle-delete { top: -13px; left: -13px; background: #ff4a4a; color: white; cursor: pointer; }
+    .handle-resize { bottom: -13px; right: -13px; background: #ffffff; color: #000; cursor: nwse-resize; font-size: 14px; }
+
+    /* === TIMELINE (INSHOT STYLE) === */
+    .timeline-drawer {
+      position: absolute; bottom: 85px; left: 0; width: 100%; height: 125px;
+      background: rgba(15, 15, 20, 0.98); border-top: 1px solid var(--accent-cyan);
+      backdrop-filter: blur(15px); transform: translateY(200%); transition: transform 0.3s ease;
+      display: flex; flex-direction: column; z-index: 600; padding-top: 5px;
+    }
+    .timeline-drawer.open { transform: translateY(0); }
+    
+    .timeline-header-actions { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .context-toolbar { display: flex; align-items: center; gap: 20px; padding: 5px 10px; overflow-x: auto; scrollbar-width: none; }
+    .context-toolbar::-webkit-scrollbar { display: none; }
+    .context-tool-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; min-width: 50px; font-family: inherit; font-weight: 600; }
+    .context-tool-btn i { font-size: 20px; transition: color 0.2s; }
+    .context-tool-btn:hover { color: white; }
+    .context-tool-btn:hover i { transform: scale(1.1); }
+
+    .timeline-tracks { flex: 1; overflow-x: auto; background: rgba(0,0,0,0.6); padding: 5px; white-space: nowrap; margin-top:5px; }
+    .timeline-layer { display: inline-block; height: 35px; background: rgba(255, 0, 124, 0.5); border: 1px solid var(--accent-pink); border-radius: 6px; padding: 5px 10px; margin: 3px; color: white; font-size: 12px; line-height: 22px; min-width: 100px; }
+    .layer-type-video { background: rgba(0, 150, 255, 0.4); border-color: #0096ff; }
+    .layer-type-text { background: rgba(0, 240, 255, 0.4); border-color: var(--accent-cyan); }
+    .layer-type-pip { background: rgba(150, 0, 255, 0.4); border-color: #9600ff; }
+    .layer-type-audio { background: rgba(0, 255, 100, 0.4); border-color: #00ff64; }
+
+    /* === EDIT PANEL === */
+    .edit-panel { background: rgba(10, 10, 20, 0.9); border-top: 1px solid var(--border-glow); backdrop-filter: blur(20px); z-index: 500; display: flex; flex-direction: column; }
+    .sub-panel { display: none; padding: 15px 20px; background: var(--card-glass); border-bottom: 1px solid rgba(255, 255, 255, 0.05); overflow-x: auto; gap: 20px; align-items: center; scrollbar-width: none; }
+    .sub-panel::-webkit-scrollbar { display: none; }
+    .sub-panel.active { display: flex; }
+
+    .slider-box { display: flex; flex-direction: column; gap: 6px; min-width: 130px; text-align: center; }
+    .slider-box label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .slider-box input[type="range"] { width: 100%; accent-color: var(--accent-cyan); cursor: pointer; }
+
+    /* Filters Layout */
+    .filter-card { flex: 0 0 85px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; border-radius: 12px; padding: 6px; border: 1px solid transparent; }
+    .filter-card:hover, .filter-card.active { border-color: var(--accent-cyan); background: rgba(0, 240, 255, 0.08); }
+    .filter-preview-box { width: 65px; height: 65px; border-radius: 10px; background: linear-gradient(45deg, #222, #444); border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); text-align: center; }
+    .filter-card span { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
+    /* Effects layout */
+    .effect-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-width: 70px; }
+    .effect-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; justify-content: center; align-items: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; color: var(--text-light); }
+    .effect-btn:hover .effect-icon, .effect-btn.active .effect-icon { border-color: var(--accent-cyan); background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan); }
+    .effect-btn span { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+    /* Controls Styling */
+    .tool-bar { display: flex; overflow-x: auto; padding: 12px 15px; gap: 22px; white-space: nowrap; scrollbar-width: none; }
+    .tool-bar::-webkit-scrollbar { display: none; }
+    .tool-btn { background: transparent; border: none; color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; font-family: inherit;}
+    .tool-btn i { font-size: 20px; }
+    .tool-btn.active, .tool-btn:hover { color: var(--accent-cyan); }
+
+    /* Loader Modal */
+    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 15, 0.85); backdrop-filter: blur(20px); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .loader-overlay.show { opacity: 1; pointer-events: auto; }
+    .spinner { width: 50px; height: 50px; border: 4px solid rgba(0, 240, 255, 0.15); border-top-color: var(--accent-cyan); border-right-color: var(--accent-pink); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 25px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { font-weight: 700; font-size: 16px; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* === EXPORT PAGE 2 (DOWNLOAD SCREEN) === */
+    #exportPage {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: var(--bg-deep); z-index: 10000; flex-direction: column; 
+    }
+    .export-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+    .export-title { font-size: 28px; font-weight: 800; margin-bottom: 30px; color: var(--accent-cyan); }
+    .progress-bar-container { width: 90%; max-width: 500px; height: 25px; background: #1e1e2d; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+    #exportProgressFill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink)); transition: width 0.3s ease; }
+    .export-status-text { font-size: 18px; font-weight: bold; color: var(--text-light); }
+    .download-anim { font-size: 60px; color: var(--accent-pink); margin-bottom: 20px; animation: bounce 1s infinite alternate; }
+    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+
+  </style>
+</head>
+<body>
+
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <!-- LOADER -->
+  <div id="loaderModal" class="loader-overlay">
+    <div class="spinner"></div>
+    <div id="loaderText" class="loader-text">Processing Video...</div>
+  </div>
+
+  <input type="file" id="videoInput" accept="video/*" multiple onchange="handleVideoImport(event)" style="display:none;">
+  <input type="file" id="audioInput" accept="audio/*, video/*" onchange="handleAudioImport(event)" style="display:none;">
+  <input type="file" id="pipInput" accept="image/*, video/*" onchange="spawnPipOverlay(event)" style="display:none;">
+
+  <!-- TOP NAVBAR -->
+  <div class="top-nav" id="mainNav">
+    <span class="brand-logo">ProEditor Studio</span>
+    <div class="nav-buttons-group">
+      <!-- Feature 2: New '+' Button to Append Videos -->
+      <button id="addMoreVideoBtn" class="action-top-btn add-btn" style="display:none;" onclick="document.getElementById('videoInput').click()">
+        <i class="fa-solid fa-plus"></i> <span class="hide-mobile">Add</span>
+      </button>
+      <!-- Export/Import Button -->
+      <button id="topActionButton" class="action-top-btn" onclick="triggerTopAction()">
+        <i class="fa-solid fa-video"></i> <span id="topBtnText">Import Video</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- EXPORT SCREEN (PAGE 2) - REAL HD CANVAS RECORDER -->
+  <div id="exportPage">
+    <div class="top-nav">
+      <span class="brand-logo">HD Export Center</span>
+      <div class="nav-buttons-group">
+        <button class="action-top-btn add-btn" onclick="cancelExport()"><i class="fa-solid fa-arrow-left"></i> Cancel</button>
+        <button class="action-top-btn" onclick="window.location.href='index.html'"><i class="fa-solid fa-house"></i> Home</button>
+      </div>
+    </div>
+    <div class="export-content">
+      <i class="fa-solid fa-cloud-arrow-down download-anim"></i>
+      <div class="export-title">Rendering HD Video...</div>
+      <div class="progress-bar-container">
+        <div id="exportProgressFill"></div>
+      </div>
+      <div class="export-status-text"><span id="exportPercentage">0</span>% Completed</div>
+      <p style="color: var(--text-muted); margin-top: 15px; font-size: 14px;">Baking filters, text, and PIPs... Please do not close this page.</p>
+    </div>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div class="workspace-wrapper" id="workspaceWrapper">
+    <div id="emptyState" style="text-align:center; cursor:pointer; background: var(--card-glass); padding: 40px; border-radius:24px; border: 1px dashed var(--border-glow);" onclick="document.getElementById('videoInput').click()">
+      <i class="fa-solid fa-cloud-arrow-up" style="font-size: 48px; color: var(--accent-cyan); margin-bottom: 15px;"></i>
+      <h3>Select Video Files</h3>
+      <p>Tap here to import video tracks and unlock timeline editing tools.</p>
+    </div>
+
+    <div id="videoBox" class="canvas-container">
+      <!-- Fixed Video Wrapper for Perfect PIP/Text Boundaries -->
+      <div id="videoHuggingWrapper">
+          <video id="mainVideo" playsinline></video>
+          <div id="videoFxLayer" class="video-overlay-fx"></div>
+          <i id="playPauseBtn" class="fa-solid fa-circle-play play-btn-overlay" onclick="togglePlay()"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE CONTEXT UI (PER INSHOT DESIGN IMAGES) -->
+  <div id="timelineDrawer" class="timeline-drawer">
+    <div class="timeline-header-actions">
+       
+       <!-- Audio Toolbar -->
+       <div id="audioContext" class="context-toolbar" style="display:none;">
+          <button class="context-tool-btn" onclick="document.getElementById('audioInput').click()"><i class="fa-solid fa-music" style="color:#b452ff"></i>Music</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-wand-magic-sparkles" style="color:#ff52a3"></i>Effects</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-microphone" style="color:#ff5e52"></i>Record</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-headset" style="color:#ffa852"></i>AI Speech</button>
+          <div style="width:1px; height:20px; background:rgba(255,255,255,0.2);"></div>
+          <button class="context-tool-btn"><i class="fa-solid fa-pen"></i>Edit</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-volume-high"></i>Volume</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-arrows-split-up-and-left"></i>Split</button>
+          <button class="context-tool-btn" onclick="deleteActiveLayer()"><i class="fa-solid fa-trash"></i>Delete</button>
+       </div>
+       
+       <!-- PIP Toolbar -->
+       <div id="pipContext" class="context-toolbar" style="display:none;">
+          <button class="context-tool-btn" onclick="document.getElementById('pipInput').click()"><i class="fa-solid fa-square-plus" style="color:#00f0ff"></i>PIP</button>
+          <div style="width:1px; height:20px; background:rgba(255,255,255,0.2);"></div>
+          <button class="context-tool-btn"><i class="fa-solid fa-pen"></i>Edit</button>
+          <button class="context-tool-btn"><i class="fa-regular fa-clock"></i>Duration</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-arrows-split-up-and-left"></i>Split</button>
+          <button class="context-tool-btn" onclick="deleteActiveLayer()"><i class="fa-solid fa-trash"></i>Delete</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-circle-half-stroke" style="color:#ffeb3b"></i>Filter</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-volume-high"></i>Volume</button>
+       </div>
+
+       <!-- Text Toolbar -->
+       <div id="textContext" class="context-toolbar" style="display:none;">
+          <button class="context-tool-btn" onclick="activateTextTool()"><i class="fa-solid fa-t" style="color:#00f0ff"></i>Text</button>
+          <div style="width:1px; height:20px; background:rgba(255,255,255,0.2);"></div>
+          <button class="context-tool-btn"><i class="fa-solid fa-pen"></i>Edit</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-arrows-split-up-and-left"></i>Split</button>
+          <button class="context-tool-btn" onclick="deleteActiveLayer()"><i class="fa-solid fa-trash"></i>Delete</button>
+          <button class="context-tool-btn"><i class="fa-solid fa-wand-magic-sparkles" style="color:#ffeb3b"></i>Animation</button>
+       </div>
+       
+       <!-- Right Hide Button -->
+       <i class="fa-solid fa-check" style="cursor:pointer; color: white; font-size: 24px; margin-left: auto; padding: 5px;" onclick="closeTimeline()"></i>
+    </div>
+    
+    <div class="timeline-tracks" id="timelineTracks"></div>
+  </div>
+
+  <!-- EDIT PANEL -->
+  <div class="edit-panel" id="editPanel" style="opacity: 0.5; pointer-events: none;">
+    
+    <div id="adjustPanel" class="sub-panel">
+      <div class="slider-box"><label>Brightness</label><input type="range" id="adj_brightness" min="-100" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <div class="slider-box"><label>Contrast</label><input type="range" id="adj_contrast" min="-100" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <div class="slider-box"><label>Saturation</label><input type="range" id="adj_saturation" min="-100" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <div class="slider-box"><label>Blur</label><input type="range" id="adj_blur" min="0" max="20" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <div class="slider-box"><label>Hue Rotate</label><input type="range" id="adj_hue" min="0" max="360" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <div class="slider-box"><label>Sepia</label><input type="range" id="adj_sepia" min="0" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <div class="slider-box"><label>Invert</label><input type="range" id="adj_invert" min="0" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <div class="slider-box"><label>Grayscale</label><input type="range" id="adj_grayscale" min="0" max="100" value="0" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <div class="slider-box"><label>Opacity</label><input type="range" id="adj_opacity" min="0" max="100" value="100" oninput="applyEffects()" onchange="saveHistory()"></div>
+      <button onclick="resetAdjustments()" style="background:var(--accent-pink); color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer;">Reset</button>
+    </div>
+
+    <div id="filterPanel" class="sub-panel"></div>
+
+    <div id="advancedEffectsPanel" class="sub-panel">
+      <div style="display:flex; gap:15px;" id="advancedEffectsGrid"></div>
+    </div>
+
+    <!-- Feature 1: Live Animated Effects Panel -->
+    <div id="liveFxPanel" class="sub-panel">
+      <div class="effect-btn active" id="btn-fx-none" onclick="startLiveFx('none')">
+        <div class="effect-icon"><i class="fa-solid fa-ban"></i></div><span>None</span>
+      </div>
+      <div class="effect-btn" id="btn-fx-snow" onclick="startLiveFx('snow')">
+        <div class="effect-icon"><i class="fa-regular fa-snowflake"></i></div><span>Snow Fall</span>
+      </div>
+      <div class="effect-btn" id="btn-fx-rain" onclick="startLiveFx('rain')">
+        <div class="effect-icon"><i class="fa-solid fa-cloud-showers-heavy"></i></div><span>Rain</span>
+      </div>
+      <div class="effect-btn" id="btn-fx-hearts" onclick="startLiveFx('hearts')">
+        <div class="effect-icon"><i class="fa-solid fa-heart"></i></div><span>Hearts</span>
+      </div>
+      <div class="effect-btn" id="btn-fx-fire" onclick="startLiveFx('fire')">
+        <div class="effect-icon"><i class="fa-solid fa-fire"></i></div><span>Fire</span>
+      </div>
+      <div class="effect-btn" id="btn-fx-dots" onclick="startLiveFx('dots')">
+        <div class="effect-icon"><i class="fa-solid fa-circle-dot"></i></div><span>Glowing Dots</span>
+      </div>
+    </div>
+
+    <!-- USER SPECIFIED TEXT PANEL CODE -->
+    <div id="textPanel" class="sub-panel">
+      <div class="text-controls">
+        <textarea id="textInputVal" placeholder="Type here..." oninput="updateLiveText()" style="background: transparent; border: none; color: white; outline: none; width: 160px; height: 35px; resize: none; font-family: inherit; vertical-align: middle;"></textarea>
+        <input type="color" id="textColorVal" value="#ffffff" oninput="updateLiveText()">
+        <select id="textFontVal" onchange="updateLiveText()">
+          <option value="Inter">𝘐𝘯𝘵𝘦𝘳</option> <option value="Roboto">𝗥𝗼𝗯𝗼𝘁𝗼</option>
+          <option value="Lato">𝙇𝙖𝙩𝙤</option> <option value="Montserrat">𝙈𝙤𝙣𝙩𝙨𝙚𝙧𝙧𝙖𝙩</option>
+          <option value="Oswald">𝗢𝘀𝘄𝗮𝗹𝗱</option> <option value="Raleway">𝑅𝒶𝓁𝑒𝓌𝒶𝓎</option>
+          <option value="Poppins">𝗣𝗼𝗽𝗽𝗶𝗻𝘀</option> <option value="Nunito">𝓝𝓾𝓷𝓲𝓽𝓸</option>
+          <option value="Ubuntu">𝗨𝗯𝘂𝗻𝘁𝘂</option> <option value="Playfair Display">𝓟𝓵𝓪𝔂𝓯𝓪𝓲𝓻</option>
+          <option value="Merriweather">𝓜𝓮𝓻𝓻𝓲𝔀𝓮𝓪𝓽𝓱𝓮𝓻</option> <option value="Pacifico">𝓟𝓪𝓬𝓲𝓯𝓲𝓬𝓸</option>
+          <option value="Dancing Script">𝒟𝒶𝓃𝒸𝒾𝓃𝑔 𝒮𝒸𝓇𝒾𝓅𝓉</option> <option value="Caveat">𝒞𝒶𝓋𝑒𝒶𝓉</option>
+          <option value="Anton">𝗔𝗻𝘁𝗼𝗻</option> <option value="Lobster">𝓛𝓸𝓫𝓼𝓽𝓮𝓻</option>
+          <option value="Bebas Neue">𝘽𝙚𝙗𝙖𝙨 𝙉𝙚𝙪𝙚</option> <option value="Fjalla One">𝙁𝙟𝙖𝙡𝙡𝙖</option>
+          <option value="Teko">𝙏𝙚𝙠𝙤</option> <option value="Righteous">𝓡𝓲𝓰𝒽𝓉𝑒𝑜𝓊𝓈</option>
+        </select>
+      </div>
+      <button onclick="placeTextRightArrow()" style="background:var(--accent-cyan); color:#000; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:5px;">
+        Done <i class="fa-solid fa-check"></i>
+      </button>
+    </div>
+
+    <div id="canvasPanel" class="sub-panel">
+      <button class="tool-btn" onclick="setCanvasRatio('free', this)"><i class="fa-solid fa-expand"></i>Fit Video</button>
+      <button class="tool-btn" onclick="setCanvasRatio('1/1', this)"><i class="fa-solid fa-square"></i>1:1 (Insta)</button>
+      <button class="tool-btn" onclick="setCanvasRatio('4/5', this)"><i class="fa-solid fa-rectangle-ad"></i>4:5 (Post)</button>
+      <button class="tool-btn" onclick="setCanvasRatio('16/9', this)"><i class="fa-solid fa-desktop"></i>16:9 (YT)</button>
+      <button class="tool-btn" onclick="setCanvasRatio('9/16', this)"><i class="fa-solid fa-mobile-screen"></i>9:16 (Reels)</button>
+    </div>
+
+    <!-- MAIN TOOLBAR (Opens UI Context Menus Only!) -->
+    <div class="tool-bar">
+      <button class="tool-btn" onclick="undoState()"><i class="fa-solid fa-arrow-rotate-left"></i>Undo</button>
+      <button class="tool-btn" onclick="redoState()"><i class="fa-solid fa-arrow-rotate-right"></i>Redo</button>
+      <div style="width:1px; height:30px; background:rgba(255,255,255,0.2); margin:0 5px;"></div>
+
+      <button class="tool-btn" onclick="toggleSubPanel('adjustPanel')"><i class="fa-solid fa-sliders"></i>Adjust</button>
+      <button class="tool-btn" onclick="toggleSubPanel('filterPanel')"><i class="fa-solid fa-wand-magic"></i>Filter</button>
+      <button class="tool-btn" onclick="toggleSubPanel('advancedEffectsPanel')"><i class="fa-solid fa-wand-magic-sparkles"></i>Effects</button>
+      <button class="tool-btn" onclick="toggleSubPanel('liveFxPanel')"><i class="fa-solid fa-star-and-crescent"></i>Live FX</button>
+      
+      <!-- These 3 Buttons now ONLY open Context Drawer UI (Inshot logic) -->
+      <button class="tool-btn" onclick="openTimelineDrawer('text')"><i class="fa-solid fa-font"></i>Text</button>
+      <button class="tool-btn" onclick="openTimelineDrawer('pip')"><i class="fa-solid fa-images"></i>PIP Layer</button>
+      <button class="tool-btn" onclick="openTimelineDrawer('audio')"><i class="fa-solid fa-music"></i>Audio Track</button>
+      
+      <button class="tool-btn" onclick="toggleSubPanel('canvasPanel')"><i class="fa-solid fa-border-all"></i>Canvas</button>
+      <button class="tool-btn" onclick="rotateVideo(90)"><i class="fa-solid fa-rotate-right"></i>Rotate</button>
+      <button class="tool-btn" onclick="flipVideo('h')"><i class="fa-solid fa-arrows-left-right"></i>Flip H</button>
+      <button class="tool-btn" onclick="flipVideo('v')"><i class="fa-solid fa-arrows-up-down"></i>Flip V</button>
+      <button class="tool-btn" onclick="resetAllEditor()" style="color:var(--accent-pink);"><i class="fa-solid fa-trash-arrow-up"></i>Reset All</button>
+    </div>
+  </div>
+
+  <script>
+    let videoPlaylist = [];
+    let currentVideoIndex = 0;
+    let hasVideo = false;
+    let mainVideo = document.getElementById('mainVideo');
+    let videoHuggingWrapper = document.getElementById('videoHuggingWrapper');
+    let globalZIndex = 100;
+    let activeTarget = 'main'; 
+    let layerCounter = 0;
+    let currentRotation = 0;
+    let flipH = 1, flipV = 1;
+    let isExportingFlag = false;
+    let stopExportingFlag = false;
+    let exportRecorder = null;
+
+    let stateStyles = {
+      main: { b: 0, c: 0, s: 0, blur: 0, h: 0, sep: 0, inv: 0, gray: 0, op: 100, activeFilterCss: 'none', overlayFx: 'none' }
+    };
+
+    let layers = {}; 
+    let historyStack = [];
+    let historyIndex = -1;
+    let isRestoring = false;
+
+    // Filter Presets 
+    const filterPresets = [
+      { name: 'Original', filter: 'none' },
+      { name: 'Soft Glow', filter: 'brightness(108%) contrast(104%) saturate(112%)' },
+      { name: 'Fair Glow', filter: 'brightness(118%) contrast(102%) saturate(108%)' },
+      { name: 'Glass Skin', filter: 'brightness(114%) contrast(106%) saturate(110%)' },
+      { name: 'Pink Glow', filter: 'brightness(110%) saturate(120%) hue-rotate(-6deg)' },
+      { name: 'Soft Red', filter: 'brightness(108%) contrast(106%) saturate(125%) hue-rotate(-18deg)' },
+      { name: 'Cyberpunk', filter: 'hue-rotate(180deg) contrast(130%) saturate(160%)' },
+      { name: '90s Retro', filter: 'sepia(40%) contrast(110%) brightness(105%) saturate(130%)' },
+      { name: 'Warm Gold', filter: 'sepia(25%) saturate(140%) brightness(108%)' },
+      { name: 'Cold Winter', filter: 'hue-rotate(190deg) saturate(80%) brightness(105%)' },
+      { name: 'Noir B&W', filter: 'grayscale(100%) contrast(150%)' },
+      { name: 'Emerald', filter: 'hue-rotate(80deg) saturate(140%)' },
+      { name: 'Sunset Glow', filter: 'sepia(50%) hue-rotate(-20deg) saturate(180%)' },
+      { name: 'Sepia Dream', filter: 'sepia(100%) contrast(90%)' },
+      { name: 'Neon Invert', filter: 'invert(100%) hue-rotate(180deg)' },
+      { name: 'Vintage 80s', filter: 'contrast(120%) brightness(90%) sepia(30%)' },
+      { name: 'Midnight', filter: 'brightness(80%) contrast(140%) hue-rotate(200deg)' },
+      { name: 'Pastel Cyan', filter: 'hue-rotate(150deg) brightness(115%) saturate(80%)' },
+      { name: 'Pop High', filter: 'saturate(200%) contrast(125%)' },
+      { name: 'Moody Dark', filter: 'brightness(75%) contrast(130%) saturate(90%)' },
+      { name: 'Soft Fade', filter: 'brightness(110%) contrast(85%) saturate(90%)' },
+      { name: 'Vaporwave', filter: 'hue-rotate(280deg) saturate(170%) contrast(110%)' }
+    ];
+
+    const screenEffects = [
+      { name: 'None', class: 'none', icon: 'fa-ban' },
+      { name: 'CRT Scanlines', class: 'fx-crt', icon: 'fa-tv' },
+      { name: 'VHS Cam', class: 'fx-vhs', icon: 'fa-compact-disc' },
+      { name: 'Dark Vignette', class: 'fx-vignette-dark', icon: 'fa-circle-dot' },
+      { name: 'Light Glow', class: 'fx-vignette-light', icon: 'fa-circle' }
+    ];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderFilterCards();
+      renderEffectsGrid();
+    });
+
+    // Handle Playlist Engine & Accurate Export Stopping (Fixes 2 Minute Bug)
+    mainVideo.addEventListener('ended', async () => {
+      if (currentVideoIndex < videoPlaylist.length - 1) {
+        loadVideo(currentVideoIndex + 1);
+        if (isExportingFlag) await mainVideo.play();
+      } else {
+        // End of ALL videos. Stop the export recorder precisely here!
+        if (isExportingFlag && exportRecorder) {
+            exportRecorder.stop();
+            isExportingFlag = false;
+        }
+      }
+    });
+
+    function showLoader(msg) {
+      document.getElementById("loaderText").innerText = msg;
+      document.getElementById("loaderModal").classList.add("show");
+    }
+    
+    function hideLoader() { document.getElementById("loaderModal").classList.remove("show"); }
+
+    // --- ACCURATE HD CANVAS RENDER ENGINE (EXPORT) ---
+    async function triggerTopAction() {
+      if (!hasVideo) {
+        document.getElementById("videoInput").click();
+      } else {
+        document.getElementById('mainNav').style.display = 'none';
+        document.getElementById('workspaceWrapper').style.display = 'none';
+        document.getElementById('editPanel').style.display = 'none';
+        document.getElementById('exportPage').style.display = 'flex';
+        
+        stopExportingFlag = false;
+        isExportingFlag = true;
+        document.getElementById('exportPercentage').innerText = "0";
+        document.getElementById('exportProgressFill').style.width = "0%";
+        document.querySelector('.export-title').innerText = "Rendering HD Video...";
+        document.querySelector('.download-anim').className = "fa-solid fa-cloud-arrow-down download-anim";
+        document.querySelector('.download-anim').style.color = "var(--accent-pink)";
+        
+        executeHDExport();
+      }
+    }
+
+    async function executeHDExport() {
+      const canvas = document.createElement('canvas');
+      canvas.width = mainVideo.videoWidth || 1920;
+      canvas.height = mainVideo.videoHeight || 1080;
+      const ctx = canvas.getContext('2d');
+      
+      const stream = canvas.captureStream(60); 
+      
+      try {
+          exportRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9', videoBitsPerSecond: 10000000 });
+      } catch (e) {
+          exportRecorder = new MediaRecorder(stream);
+      }
+      
+      const chunks = [];
+      exportRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      
+      // Fires accurately when video ends
+      exportRecorder.onstop = () => {
+          if (stopExportingFlag) return;
+          const blob = new Blob(chunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'ProEditor_HD_Export.webm';
+          a.click();
+          
+          document.getElementById('exportPercentage').innerText = "100";
+          document.querySelector('.export-title').innerText = "HD Download Complete! ✅";
+          document.querySelector('.download-anim').className = "fa-solid fa-circle-check download-anim";
+          document.querySelector('.download-anim').style.color = "var(--accent-cyan)";
+      };
+
+      currentVideoIndex = 0;
+      mainVideo.src = videoPlaylist[0];
+      mainVideo.currentTime = 0;
+      mainVideo.loop = false; // Extremely important!
+      await mainVideo.play();
+      
+      exportRecorder.start();
+      let totalDuration = mainVideo.duration || 1;
+
+      function drawFrame() {
+          if (stopExportingFlag || !isExportingFlag) return;
+          
+          // Draw Active Video & Adjustments
+          ctx.save();
+          let st = stateStyles.main;
+          let customChain = `brightness(${100 + Number(st.b)}%) contrast(${100 + Number(st.c)}%) saturate(${100 + Number(st.s)}%) blur(${st.blur}px) hue-rotate(${st.h}deg) sepia(${st.sep}%) invert(${st.inv}%) grayscale(${st.gray}%) opacity(${st.op}%)`;
+          ctx.filter = (st.activeFilterCss !== 'none' ? st.activeFilterCss + " " : "") + customChain;
+          
+          ctx.translate(canvas.width/2, canvas.height/2);
+          ctx.scale(flipH, flipV);
+          ctx.rotate(currentRotation * Math.PI / 180);
+          ctx.drawImage(mainVideo, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
+          ctx.restore();
+
+          // Fix: Embed Live Particles (Snow, Hearts, Fire, Rain) directly into Video Frame!
+          ctx.save();
+          document.querySelectorAll('#videoFxLayer .particle').forEach(p => {
+              let rect = p.getBoundingClientRect();
+              let wrapRect = videoHuggingWrapper.getBoundingClientRect();
+              let scaleX = canvas.width / wrapRect.width;
+              let scaleY = canvas.height / wrapRect.height;
+              
+              let x = (rect.left - wrapRect.left) * scaleX;
+              let y = (rect.top - wrapRect.top) * scaleY;
+              
+              if(p.classList.contains('snow') || p.classList.contains('dots')) {
+                  let size = rect.width * scaleX;
+                  ctx.fillStyle = getComputedStyle(p).backgroundColor;
+                  ctx.beginPath();
+                  ctx.arc(x + size/2, y + size/2, size/2, 0, Math.PI*2);
+                  ctx.fill();
+              } else if (p.classList.contains('rain')) {
+                  let w = rect.width * scaleX;
+                  let h = rect.height * scaleY;
+                  ctx.fillStyle = getComputedStyle(p).backgroundColor;
+                  ctx.fillRect(x, y, w, h);
+              } else {
+                  ctx.font = `${parseFloat(getComputedStyle(p).fontSize) * scaleX}px Arial`;
+                  ctx.textAlign = "left";
+                  ctx.textBaseline = "top";
+                  ctx.fillText(p.innerText, x, y);
+              }
+          });
+          ctx.restore();
+          
+          // Draw PIP & Text layers with exact filters and rotations
+          Object.values(layers).forEach(layer => {
+             if (layer.type === 'pip') {
+                 const img = document.getElementById(layer.id + '_img');
+                 if (img) {
+                     const scaleRatio = canvas.width / videoHuggingWrapper.clientWidth;
+                     const w = layer.width * scaleRatio;
+                     const h = w * (img.naturalHeight / (img.naturalWidth || 1));
+                     const x = layer.relX * canvas.width;
+                     const y = layer.relY * canvas.height;
+                     
+                     ctx.save();
+                     let pst = stateStyles[layer.id];
+                     if(pst) {
+                         let pchain = `brightness(${100 + Number(pst.b)}%) contrast(${100 + Number(pst.c)}%) saturate(${100 + Number(pst.s)}%) blur(${pst.blur}px) hue-rotate(${pst.h}deg) sepia(${pst.sep}%) invert(${pst.inv}%) grayscale(${pst.gray}%) opacity(${pst.op}%)`;
+                         ctx.filter = (pst.activeFilterCss !== 'none' ? pst.activeFilterCss + " " : "") + pchain;
+                     }
+                     ctx.translate(x, y);
+                     ctx.rotate(layer.rotation * Math.PI / 180);
+                     ctx.drawImage(img, -w/2, -h/2, w, h);
+                     ctx.restore();
+                 }
+             } else if (layer.type === 'text') {
+                 const span = document.getElementById(layer.id + '_span');
+                 if (span) {
+                     const scaleRatio = canvas.width / videoHuggingWrapper.clientWidth;
+                     ctx.font = `800 ${layer.fontSize * scaleRatio}px ${span.style.fontFamily || 'Inter'}`;
+                     ctx.fillStyle = span.style.color;
+                     ctx.textAlign = "center";
+                     ctx.textBaseline = "middle";
+                     
+                     const x = layer.relX * canvas.width;
+                     const y = layer.relY * canvas.height;
+                     
+                     ctx.save();
+                     ctx.translate(x, y);
+                     ctx.rotate(layer.rotation * Math.PI / 180);
+                     ctx.fillText(span.innerText, 0, 0);
+                     ctx.restore();
+                 }
+             }
+          });
+
+          // Live Progress Bar (Approximate for playlist tracking)
+          let progress = Math.min(99, Math.floor((mainVideo.currentTime / totalDuration) * 100));
+          document.getElementById('exportProgressFill').style.width = progress + '%';
+          document.getElementById('exportPercentage').innerText = progress;
+
+          requestAnimationFrame(drawFrame);
+      }
+      drawFrame();
+    }
+
+    function cancelExport() {
+      stopExportingFlag = true;
+      isExportingFlag = false;
+      if (exportRecorder) exportRecorder.stop();
+      mainVideo.pause();
+      document.getElementById('exportPage').style.display = 'none';
+      document.getElementById('mainNav').style.display = 'flex';
+      document.getElementById('workspaceWrapper').style.display = 'flex';
+      document.getElementById('editPanel').style.display = 'flex';
+    }
+
+    // --- IMPORT VIDEOS TRACK ---
+    function handleVideoImport(event) {
+      const files = event.target.files;
+      if (files.length === 0) return;
+
+      let isFirstTime = !hasVideo;
+
+      showLoader("Importing Video Asset Streams...");
+      setTimeout(() => {
+        for (let file of files) {
+          videoPlaylist.push(URL.createObjectURL(file));
+          addTrackElementToTimeline(file.name, 'video');
+        }
+        
+        if (isFirstTime) {
+          document.getElementById('emptyState').style.display = 'none';
+          document.querySelector('.canvas-container').style.display = 'flex';
+          document.getElementById('editPanel').style.opacity = '1';
+          document.getElementById('editPanel').style.pointerEvents = 'auto';
+          hasVideo = true;
+
+          const topBtn = document.getElementById("topActionButton");
+          topBtn.classList.add("save-mode");
+          topBtn.innerHTML = `<i class="fa-solid fa-file-export"></i> <span>Export Video</span>`;
+          
+          document.getElementById('addMoreVideoBtn').style.display = 'flex';
+          loadVideo(0);
+        } else {
+          if(mainVideo.ended) loadVideo(currentVideoIndex + 1);
+        }
+
+        saveHistory();
+        hideLoader();
+      }, 600);
+    }
+
+    function loadVideo(index) {
+      if(index >= videoPlaylist.length) return;
+      currentVideoIndex = index;
+      mainVideo.src = videoPlaylist[index];
+      mainVideo.play();
+      document.getElementById('playPauseBtn').style.display = 'none';
+    }
+
+    function togglePlay() {
+      if (mainVideo.paused) {
+        mainVideo.play();
+        document.getElementById('playPauseBtn').style.display = 'none';
+      } else {
+        mainVideo.pause();
+        document.getElementById('playPauseBtn').style.display = 'block';
+      }
+    }
+    mainVideo.addEventListener('click', togglePlay);
+
+    // --- FEATURE 1: LIVE ANIMATED FX ENGINE ---
+    let activeLiveFx = 'none';
+    let liveFxLoop;
+
+    function startLiveFx(type) {
+      clearInterval(liveFxLoop);
+      document.querySelectorAll('#videoFxLayer .particle').forEach(el => el.remove());
+      
+      document.querySelectorAll('#liveFxPanel .effect-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-fx-' + type).classList.add('active');
+      activeLiveFx = type;
+
+      if(type === 'none') return;
+
+      liveFxLoop = setInterval(() => {
+        const p = document.createElement('div');
+        p.className = `particle ${type}`;
+        p.style.left = Math.random() * 100 + '%';
+        
+        if (type === 'snow') {
+           let size = Math.random() * 8 + 3; // small & big snow
+           p.style.width = size + 'px'; p.style.height = size + 'px';
+           p.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        } else if (type === 'rain') {
+           p.style.animationDuration = (Math.random() * 0.4 + 0.2) + 's';
+        } else if (type === 'hearts') {
+           p.innerHTML = '❤️';
+           p.style.bottom = '-30px'; p.style.fontSize = (Math.random()*15+15)+'px';
+           p.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        } else if (type === 'fire') {
+           p.innerHTML = '🔥';
+           p.style.bottom = '-30px'; p.style.fontSize = (Math.random()*20+15)+'px';
+           p.style.animationDuration = (Math.random() * 2 + 1) + 's';
+        } else if (type === 'dots') {
+           let size = Math.random() * 15 + 5;
+           p.style.width = size + 'px'; p.style.height = size + 'px';
+           p.style.background = `hsl(${Math.random()*360}, 100%, 60%)`;
+           p.style.bottom = '-30px';
+           p.style.animationDuration = (Math.random() * 4 + 2) + 's';
+        }
+
+        document.getElementById('videoFxLayer').appendChild(p);
+        setTimeout(() => { p.remove(); }, 5000); 
+      }, type === 'rain' ? 30 : 180);
+    }
+
+    // --- UNDO / REDO HISTORY ENGINE ---
+    function saveHistory() {
+      if(isRestoring || !hasVideo) return;
+
+      const layersSnapshot = {};
+      document.querySelectorAll('.movable-layer').forEach(el => {
+        const id = el.id;
+        const isText = layers[id] && layers[id].type === 'text';
+        layersSnapshot[id] = {
+          ...layers[id],
+          val: isText ? document.getElementById(id + "_span")?.innerText : null,
+          color: isText ? document.getElementById(id + "_span")?.style.color : null,
+          font: isText ? document.getElementById(id + "_span")?.style.fontFamily : null,
+          src: !isText ? document.getElementById(id + "_img")?.src : null,
+          filter: !isText ? document.getElementById(id + "_img")?.style.filter : null
+        };
+      });
+
+      const state = {
+        stateStyles: JSON.parse(JSON.stringify(stateStyles)),
+        layers: JSON.parse(JSON.stringify(layers)),
+        layersSnapshot: layersSnapshot,
+        layerCounter: layerCounter,
+        activeTarget: activeTarget,
+        currentRotation: currentRotation,
+        flipH: flipH, flipV: flipV
+      };
+
+      if(historyIndex < historyStack.length - 1) historyStack = historyStack.slice(0, historyIndex + 1);
+      historyStack.push(state);
+      historyIndex++;
+    }
+
+    function undoState() { if(historyIndex > 0) { historyIndex--; restoreState(historyStack[historyIndex]); } }
+    function redoState() { if(historyIndex < historyStack.length - 1) { historyIndex++; restoreState(historyStack[historyIndex]); } }
+
+    function restoreState(s) {
+      isRestoring = true;
+      stateStyles = JSON.parse(JSON.stringify(s.stateStyles));
+      layers = JSON.parse(JSON.stringify(s.layers));
+      layerCounter = s.layerCounter || layerCounter;
+      currentRotation = s.currentRotation;
+      flipH = s.flipH; flipV = s.flipV;
+
+      document.querySelectorAll('.movable-layer').forEach(el => el.remove());
+
+      Object.keys(s.layersSnapshot).forEach(id => {
+        const item = s.layersSnapshot[id];
+        const div = document.createElement('div');
+        div.id = id;
+        div.className = item.type === 'text' ? "movable-layer text-layer active" : "movable-layer pip-layer active";
+        
+        if(item.type === 'text') {
+          div.innerHTML = `
+            <div class="layer-handle handle-delete" onclick="removeLayer('${id}')"><i class="fa-solid fa-xmark"></i></div>
+            <span id="${id}_span" style="font-size: ${item.fontSize}px; font-weight:800; color:${item.color}; font-family:${item.font}; white-space:pre; text-shadow:0 2px 10px rgba(0,0,0,0.8);">${item.val}</span>
+            <div class="layer-handle handle-resize" onmousedown="initCombinedTransform(event, '${id}')" ontouchstart="initCombinedTransform(event, '${id}')"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
+          `;
+        } else {
+          div.innerHTML = `
+            <div class="layer-handle handle-delete" onclick="removeLayer('${id}')"><i class="fa-solid fa-xmark"></i></div>
+            <img id="${id}_img" src="${item.src}" style="width:${item.width}px; object-fit:contain; display:block; pointer-events:none; filter:${item.filter};">
+            <div class="layer-handle handle-resize" onmousedown="initCombinedTransform(event, '${id}')" ontouchstart="initCombinedTransform(event, '${id}')"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
+          `;
+        }
+        videoHuggingWrapper.appendChild(div);
+        attachLayerClick(div, id);
+        applyLayerTransform(id);
+        attachLayerDrag(id);
+      });
+
+      setEditTarget(s.activeTarget || 'main');
+      applyEffects(true);
+      isRestoring = false;
+    }
+
+    // --- TIMELINE DRAWER PANEL LOGIC (CONTEXT MENUS) ---
+    // Fix: Main tool buttons now ONLY open Context Menus (Inshot Style)
+    function openTimelineDrawer(type) {
+      document.getElementById('pipContext').style.display = 'none';
+      document.getElementById('audioContext').style.display = 'none';
+      document.getElementById('textContext').style.display = 'none';
+
+      if (type === 'pip') {
+         document.getElementById('pipContext').style.display = 'flex';
+      } else if (type === 'audio') {
+         document.getElementById('audioContext').style.display = 'flex';
+      } else if (type === 'text') {
+         document.getElementById('textContext').style.display = 'flex';
+      }
+      
+      document.getElementById('timelineDrawer').classList.add('open');
+    }
+
+    function closeTimeline() {
+      document.getElementById('timelineDrawer').classList.remove('open');
+      document.querySelectorAll(".sub-panel").forEach(p => p.classList.remove("active"));
+    }
+
+    function placeTextRightArrow() {
+        closeTimeline();
+        document.getElementById('textPanel').classList.remove('active');
+    }
+
+    function addTrackElementToTimeline(name, type) {
+      const tracks = document.getElementById('timelineTracks');
+      const layer = document.createElement('div');
+      layer.className = `timeline-layer layer-type-${type}`;
+      layer.innerHTML = `<i class="fa-solid fa-${type==='audio'?'music':(type==='text'?'font':(type==='video'?'video':'image'))}"></i> ${name.substring(0,12)}...`;
+      tracks.appendChild(layer);
+    }
+
+    function handleAudioImport(e) {
+      if(e.target.files[0]) {
+        addTrackElementToTimeline(e.target.files[0].name, 'audio');
+        saveHistory();
+      }
+    }
+
+    // --- LIVE GRAPHICS FILTERS AND FX ENGINE ---
+    function applyEffects(isTargetSwitch = false) {
+      if (!hasVideo) return;
+      let st = stateStyles[activeTarget];
+      if(!st) return;
+
+      if (!isTargetSwitch) {
+        st.b = document.getElementById("adj_brightness").value;
+        st.c = document.getElementById("adj_contrast").value;
+        st.s = document.getElementById("adj_saturation").value;
+        st.blur = document.getElementById("adj_blur").value;
+        st.h = document.getElementById("adj_hue").value;
+        st.sep = document.getElementById("adj_sepia").value;
+        st.inv = document.getElementById("adj_invert").value;
+        st.gray = document.getElementById("adj_grayscale").value;
+        st.op = document.getElementById("adj_opacity").value;
+      }
+
+      let customChain = `brightness(${100 + Number(st.b)}%) contrast(${100 + Number(st.c)}%) saturate(${100 + Number(st.s)}%) blur(${st.blur}px) hue-rotate(${st.h}deg) sepia(${st.sep}%) invert(${st.inv}%) grayscale(${st.gray}%) opacity(${st.op}%)`;
+      const fullFilterStr = (st.activeFilterCss !== 'none' ? st.activeFilterCss + " " : "") + customChain;
+
+      if(activeTarget === 'main') {
+        mainVideo.style.filter = fullFilterStr;
+        mainVideo.style.transform = `scale(${flipH}, ${flipV}) rotate(${currentRotation}deg)`;
+        
+        const fxLayer = document.getElementById("videoFxLayer");
+        fxLayer.className = "video-overlay-fx";
+        if(st.overlayFx !== 'none') fxLayer.classList.add(st.overlayFx);
+      } else if (activeTarget.startsWith('pip_')) {
+        let pipImg = document.getElementById(activeTarget + "_img");
+        if(pipImg) pipImg.style.filter = fullFilterStr;
+      }
+    }
+
+    function renderFilterCards() {
+      const panel = document.getElementById("filterPanel");
+      panel.innerHTML = "";
+      let currentFilterCss = stateStyles[activeTarget] ? stateStyles[activeTarget].activeFilterCss : 'none';
+
+      filterPresets.forEach((p, idx) => {
+        const card = document.createElement("div");
+        card.className = "filter-card" + (p.filter === currentFilterCss || (idx===0 && currentFilterCss==='none') ? " active" : "");
+        card.onclick = () => {
+          document.querySelectorAll(".filter-card").forEach(c => c.classList.remove("active"));
+          card.classList.add("active");
+          stateStyles[activeTarget].activeFilterCss = p.filter;
+          applyEffects();
+          saveHistory();
+        };
+        card.innerHTML = `<div class="filter-preview-box" style="filter: ${p.filter}">LUT</div><span>${p.name}</span>`;
+        panel.appendChild(card);
+      });
+    }
+
+    function renderEffectsGrid() {
+      const grid = document.getElementById("advancedEffectsGrid");
+      grid.innerHTML = "";
+      screenEffects.forEach(ef => {
+        const div = document.createElement("div");
+        div.className = "effect-btn" + (stateStyles.main.overlayFx === ef.class ? " active" : "");
+        div.onclick = () => {
+          document.querySelectorAll(".effect-btn").forEach(b => b.classList.remove("active"));
+          div.classList.add("active");
+          stateStyles.main.overlayFx = ef.class;
+          applyEffects();
+          saveHistory();
+        };
+        div.innerHTML = `<div class="effect-icon"><i class="fa-solid ${ef.icon}"></i></div><span>${ef.name}</span>`;
+        grid.appendChild(div);
+      });
+    }
+
+    function setEditTarget(target) {
+      activeTarget = target;
+      let st = stateStyles[target];
+      if(!st) return;
+      document.getElementById("adj_brightness").value = st.b || 0;
+      document.getElementById("adj_contrast").value = st.c || 0;
+      document.getElementById("adj_saturation").value = st.s || 0;
+      document.getElementById("adj_blur").value = st.blur || 0;
+      document.getElementById("adj_hue").value = st.h || 0;
+      document.getElementById("adj_sepia").value = st.sep || 0;
+      document.getElementById("adj_invert").value = st.inv || 0;
+      document.getElementById("adj_grayscale").value = st.gray || 0;
+      document.getElementById("adj_opacity").value = st.op || 100;
+      renderFilterCards();
+    }
+
+    function resetAdjustments() {
+      let st = stateStyles[activeTarget];
+      if(!st) return;
+      st.b = 0; st.c = 0; st.s = 0; st.blur = 0; st.h = 0; st.sep = 0; st.inv = 0; st.gray = 0; st.op = 100;
+      setEditTarget(activeTarget);
+      applyEffects(true);
+      saveHistory();
+    }
+
+    function toggleSubPanel(panelId) {
+      const panel = document.getElementById(panelId);
+      const isOpen = panel.classList.contains("active");
+      document.querySelectorAll(".sub-panel").forEach(p => p.classList.remove("active"));
+      if (!isOpen) panel.classList.add("active");
+    }
+
+    // --- CANVAS & TRANSFORM ENGINE ---
+    function setCanvasRatio(ratio, btn) {
+      const box = document.getElementById('videoHuggingWrapper');
+      if(ratio === 'free') {
+         box.style.aspectRatio = `auto`; // Uses Video native ratio
+      } else {
+         box.style.aspectRatio = ratio.replace('/', '/');
+      }
+      saveHistory();
+    }
+
+    function rotateVideo(deg) { currentRotation = (currentRotation + deg) % 360; applyEffects(); saveHistory(); }
+    function flipVideo(dir) {
+      if(dir === 'h') flipH = flipH === 1 ? -1 : 1;
+      if(dir === 'v') flipV = flipV === 1 ? -1 : 1;
+      applyEffects(); saveHistory();
+    }
+
+    // --- MULTI-LAYER TEXT ENGINE ---
+    function activateTextTool() {
+      if (!hasVideo) return;
+      toggleSubPanel('textPanel');
+      layerCounter++;
+      const layerId = 'text_' + layerCounter;
+
+      layers[layerId] = { relX: 0.5, relY: 0.5, rotation: 0, fontSize: 26, type: 'text' };
+
+      const div = document.createElement('div');
+      div.id = layerId;
+      div.className = "movable-layer text-layer active selected";
+      div.innerHTML = `
+        <div class="layer-handle handle-delete" onclick="removeLayer('${layerId}')"><i class="fa-solid fa-xmark"></i></div>
+        <span id="${layerId}_span" style="font-size: 26px; font-weight: 800; color: #ffffff; white-space: pre; text-shadow: 0 2px 10px rgba(0,0,0,0.8); font-family: 'Inter', sans-serif;">New Text</span>
+        <div class="layer-handle handle-resize" onmousedown="initCombinedTransform(event, '${layerId}')" ontouchstart="initCombinedTransform(event, '${layerId}')"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
+      `;
+
+      videoHuggingWrapper.appendChild(div);
+      attachLayerClick(div, layerId);
+      
+      document.querySelectorAll('.movable-layer').forEach(el => el.classList.remove('selected'));
+      div.classList.add('selected');
+      activeTarget = layerId;
+
+      document.getElementById("textInputVal").value = "New Text";
+      addTrackElementToTimeline('Text Layer', 'text');
+      applyLayerTransform(layerId);
+      attachLayerDrag(layerId);
+      saveHistory();
+    }
+
+    function updateLiveText() {
+      if(!activeTarget || !activeTarget.startsWith('text_')) return;
+      const val = document.getElementById("textInputVal").value;
+      const color = document.getElementById("textColorVal").value;
+      const font = document.getElementById("textFontVal").value;
+      const display = document.getElementById(activeTarget + "_span");
+      if(display) {
+        display.innerText = val || " ";
+        display.style.color = color;
+        display.style.fontFamily = font;
+      }
+    }
+
+    // --- MULTI-LAYER PICTURE IN PICTURE (PIP) ---
+    function spawnPipOverlay(e) {
+      const file = e.target.files[0];
+      if (!file || !hasVideo) return;
+      const url = URL.createObjectURL(file);
+
+      layerCounter++;
+      const layerId = 'pip_' + layerCounter;
+      layers[layerId] = { relX: 0.5, relY: 0.5, rotation: 0, width: 110, type: 'pip' };
+      stateStyles[layerId] = { b: 0, c: 0, s: 0, blur: 0, h: 0, sep: 0, inv: 0, gray: 0, op: 100, activeFilterCss: 'none' };
+
+      const div = document.createElement('div');
+      div.id = layerId;
+      div.className = "movable-layer pip-layer active selected";
+      div.innerHTML = `
+        <div class="layer-handle handle-delete" onclick="removeLayer('${layerId}')"><i class="fa-solid fa-xmark"></i></div>
+        <img id="${layerId}_img" src="${url}" style="width:110px; object-fit:contain; display:block; pointer-events:none;">
+        <div class="layer-handle handle-resize" onmousedown="initCombinedTransform(event, '${layerId}')" ontouchstart="initCombinedTransform(event, '${layerId}')"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
+      `;
+
+      videoHuggingWrapper.appendChild(div);
+      attachLayerClick(div, layerId);
+      addTrackElementToTimeline(file.name, 'pip');
+      setEditTarget(layerId);
+      applyLayerTransform(layerId);
+      attachLayerDrag(layerId);
+      saveHistory();
+    }
+
+    // --- INTERACTIVE DRAG & SCALE EVENT HANDLERS ---
+    function attachLayerClick(div, layerId) {
+      div.addEventListener('click', (ev) => {
+        if(ev.target.closest('.layer-handle')) return;
+        document.querySelectorAll('.movable-layer').forEach(el => el.classList.remove('selected'));
+        div.classList.add("selected");
+        setEditTarget(layerId);
+        if(layers[layerId].type === 'text') {
+            toggleSubPanel('textPanel');
+            document.getElementById("textInputVal").value = document.getElementById(layerId + "_span").innerText;
+            openTimelineDrawer('text');
+        } else if(layers[layerId].type === 'pip') {
+            openTimelineDrawer('pip');
+        }
+      });
+    }
+
+    function removeLayer(layerId) {
+      document.getElementById(layerId).remove();
+      delete layers[layerId];
+      delete stateStyles[layerId];
+      setEditTarget('main');
+      saveHistory();
+    }
+
+    function deleteActiveLayer() {
+      if(activeTarget !== 'main') removeLayer(activeTarget);
+    }
+
+    function applyLayerTransform(layerId) {
+      const l = layers[layerId];
+      const el = document.getElementById(layerId);
+      if (el && l) {
+        el.style.left = (l.relX * 100) + "%";
+        el.style.top = (l.relY * 100) + "%";
+        el.style.transform = `translate(-50%, -50%) rotate(${l.rotation}deg)`;
+      }
+    }
+
+    function attachLayerDrag(layerId) {
+      const el = document.getElementById(layerId);
+      el.onmousedown = el.ontouchstart = (e) => {
+        if (e.target.closest('.layer-handle')) return;
+        if(e.type === 'touchstart') e.preventDefault(); // Stop screen scroll
+        document.querySelectorAll('.movable-layer').forEach(m => m.classList.remove('selected'));
+        el.classList.add('selected');
+        setEditTarget(layerId);
+        
+        const rect = videoHuggingWrapper.getBoundingClientRect();
+
+        const onMove = (ev) => {
+          if(ev.type === 'touchmove') ev.preventDefault();
+          const cX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
+          const cY = ev.type.startsWith('touch') ? ev.touches[0].clientY : ev.clientY;
+          layers[layerId].relX = Math.max(0, Math.min(1, (cX - rect.left) / rect.width));
+          layers[layerId].relY = Math.max(0, Math.min(1, (cY - rect.top) / rect.height));
+          applyLayerTransform(layerId);
+        };
+        const onEnd = () => {
+          document.removeEventListener("mousemove", onMove); document.removeEventListener("touchmove", onMove, {passive:false});
+          saveHistory();
+        };
+        document.addEventListener("mousemove", onMove); document.addEventListener("touchmove", onMove, {passive:false});
+        document.addEventListener("mouseup", onEnd); document.addEventListener("touchend", onEnd);
+      };
+    }
+
+    function initCombinedTransform(e, layerId) {
+      e.stopPropagation(); e.preventDefault();
+      const el = document.getElementById(layerId);
+      const rect = el.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
+      
+      const startX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+      const startY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+      const startDist = Math.sqrt(Math.pow(startX - centerX, 2) + Math.pow(startY - centerY, 2));
+      const startAngle = Math.atan2(startY - centerY, startX - centerX);
+      
+      const isText = layers[layerId].type === 'text';
+      const startSize = isText ? layers[layerId].fontSize : layers[layerId].width;
+      const startRot = layers[layerId].rotation;
+
+      const onMove = (ev) => {
+        if(ev.type === 'touchmove') ev.preventDefault();
+        const cX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
+        const cY = ev.type.startsWith('touch') ? ev.touches[0].clientY : ev.clientY;
+        const angleDiff = (Math.atan2(cY - centerY, cX - centerX) - startAngle) * (180 / Math.PI);
+        layers[layerId].rotation = startRot + angleDiff;
+        const scale = Math.sqrt(Math.pow(cX - centerX, 2) + Math.pow(cY - centerY, 2)) / (startDist || 1);
+        
+        if (isText) {
+          layers[layerId].fontSize = Math.max(12, startSize * scale);
+          document.getElementById(layerId + "_span").style.fontSize = layers[layerId].fontSize + "px";
+        } else {
+          layers[layerId].width = Math.max(30, startSize * scale);
+          document.getElementById(layerId + "_img").style.width = layers[layerId].width + "px";
+        }
+        applyLayerTransform(layerId);
+      };
+
+      const onEnd = () => {
+        document.removeEventListener("mousemove", onMove); document.removeEventListener("touchmove", onMove, {passive:false});
+        saveHistory();
+      };
+      document.addEventListener("mousemove", onMove); document.addEventListener("touchmove", onMove, {passive:false});
+      document.addEventListener("mouseup", onEnd); document.addEventListener("touchend", onEnd);
+    }
+
+    // Workspace Empty State Target Cleaner
+    document.getElementById("workspaceWrapper").addEventListener('click', function(e) {
+      if (e.target.id === 'workspaceWrapper' || e.target.id === 'mainVideo' || e.target.id === 'videoHuggingWrapper') {
+        document.querySelectorAll(".movable-layer").forEach(el => el.classList.remove("selected"));
+        setEditTarget('main'); 
+      }
+    });
+
+    function resetAllEditor() {
+      if (!confirm("Reset all editing tracks timeline data?")) return;
+      document.querySelectorAll('.movable-layer').forEach(el => el.remove());
+      document.getElementById('timelineTracks').innerHTML = "";
+      layers = {};
+      currentRotation = 0; flipH = 1; flipV = 1;
+      stateStyles = { main: { b: 0, c: 0, s: 0, blur: 0, h: 0, sep: 0, inv: 0, gray: 0, op: 100, activeFilterCss: 'none', overlayFx: 'none' } };
+      setEditTarget('main');
+      applyEffects(true);
+      startLiveFx('none');
+      saveHistory();
+    }
+  </script>
+</body>
+</html>
